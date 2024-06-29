@@ -4,7 +4,7 @@ import requests
 import json
 from keep_alive import keep_alive
 
-bot = telebot.TeleBot('Bot Token') # বট টোকেন দিবেন 😐
+bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0') # বট টোকেন দিবেন 😐
 user_states = {}
 
 # Delete webhook if it exists
