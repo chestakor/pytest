@@ -4,11 +4,8 @@ import requests
 import json
 from keep_alive import keep_alive
 
-bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0') # Replace 'Bot Token' with your actual bot token
+bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 user_states = {}
-
-# Delete webhook if it exists
-
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -18,21 +15,16 @@ def send_welcome(message):
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
     chat_id = message.chat.id
-    user_states[chat_id] = {"state": "awaiting_card_details"}
-    bot.send_message(chat_id, "Please enter your card details in the format: cc|mm|yy|cvc")
-
-@bot.message_handler(func=lambda message: True)
-def handle_message(message):
-    chat_id = message.chat.id
-    user_data = user_states.get(chat_id, None)
-
-    if user_data and user_data["state"] == "awaiting_card_details":
-        card_details = message.text
-        result = check_card_details(card_details)
-        bot.send_message(chat_id, result)
-        user_states.pop(chat_id, None)
+    card_data = message.text.split()[1:]  # Get the card data from the command
+    if card_data:
+        results = []
+        for card in card_data:
+            result = check_card_details(card)
+            results.append(result)
+        for result in results:
+            bot.send_message(chat_id, result)
     else:
-        bot.send_message(chat_id, "Unknown command or state. Please start over.")
+        bot.send_message(chat_id, "Please provide card details in the format: /chk cc|mm|yy|cvc")
 
 def check_card_details(card):
     try:
@@ -71,8 +63,6 @@ def check_card_details(card):
             return "Rate limit exceeded, please try again later."
 
         tok1 = result_1.get("id")
-        if not tok1:
-            return f"Failed to get token for card: {card}"
 
         # 2nd Request
         api_url_2 = "https://api.stripe.com/v1/payment_intents"
