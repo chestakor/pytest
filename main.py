@@ -87,14 +87,17 @@ def check_card(message):
     card_data = message.text.split()[1:]  # Get the card data from the command
     if card_data:
         bot.send_message(chat_id, f"Checking cards: {card_data}")  # Log input data
+        print(f"Checking cards: {card_data}")  # Log to console
         results = []
         for card in card_data:
             result = check_card_details(card)
             results.append(result)
         for result in results:
             bot.send_message(chat_id, result)
+            print(f"Result: {result}")  # Log to console
     else:
         bot.send_message(chat_id, "Please provide card details in the format: /chk cc|mm|yy|cvc")
+        print("No card data provided")  # Log to console
 
 def check_card_details(card):
     card_parts = card.split('|')
