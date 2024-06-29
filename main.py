@@ -1,21 +1,13 @@
 import telebot
 from telebot import types
 import requests
-from flask import Flask
-from threading import Thread
+from keep_alive import keep_alive
+
 
 bot = telebot.TeleBot('7466186150:AAGmhDV5_oNKGDi_rk86mxkBtFVVWXtNZCQ') # বট টোকেন দিবেন 😐
 user_states = {}
 
-app = Flask('')
 
-@app.route('/')
-def home():
-    return "Bot is alive!"
-
-def keep_alive():
-    t = Thread(target=lambda: app.run(host='0.0.0.0', port=8080))
-    t.start()
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
