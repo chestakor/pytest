@@ -86,6 +86,7 @@ def check_card(message):
     chat_id = message.chat.id
     card_data = message.text.split()[1:]  # Get the card data from the command
     if card_data:
+        bot.send_message(chat_id, f"Checking cards: {card_data}")  # Log input data
         results = []
         for card in card_data:
             result = check_card_details(card)
@@ -125,6 +126,8 @@ def check_card_details(card):
     response_1 = requests.post(api_url_1, headers=headers, data=data_1)
     result_1 = response_1.json()
 
+    print(f"Response 1: {response_1.text}")  # Log response
+
     if "rate_limit" in response_1.text:
         return "Rate limit exceeded, please try again later."
 
@@ -145,6 +148,8 @@ def check_card_details(card):
     }
     response_2 = requests.post(api_url_2, headers=headers, data=data_2)
     result_2 = response_2.json()
+
+    print(f"Response 2: {response_2.text}")  # Log response
 
     if "rate_limit" in response_2.text:
         return "Rate limit exceeded, please try again later."
