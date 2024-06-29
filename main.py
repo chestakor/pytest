@@ -8,7 +8,7 @@ bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0') # Replac
 user_states = {}
 
 # Delete webhook if it exists
-bot.remove_webhook()
+
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
