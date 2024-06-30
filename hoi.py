@@ -53,9 +53,9 @@ def check_hoi_account(account):
     if "error" in response_data:
         error_message = response_data["error"]
         if "Sorry, we can't find an account with this email address." in error_message:
-            return "[BAD] Email Not Registered❌"
+            return "Email Not Registered❌"
         elif "Your email or password is incorrect, please try again." in error_message:
-            return "[BAD] EMAIL OR PASSWORD INCORRECT❌"
+            return "EMAIL OR PASSWORD INCORRECT❌"
         else:
             return f"Unexpected error: {error_message}"
     else:
