@@ -8,12 +8,12 @@ def process_crunchy_command(bot, message):
         total_accounts = len(account_data)
         start_time = time.time()
         results = []
-        initial_message = "↯ CRUNCHY ACCOUNT\n\n"
+        initial_message = "↯ CRUNCHYROLL CHECKER\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_accounts, start_time, message.from_user.username))
 
         for account in account_data:
             result = check_crunchy_account(account)
-            results.append(f"Combo: {account}\nResult => {result}")
+            results.append(f"Combo: {account}\nResponse => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
@@ -82,13 +82,14 @@ def check_crunchy_account(account):
         currency = subscription_info_data.get('currency_code', 'N/A')
         subscription_amount = subscription_info_data.get('amount', 'N/A')
 
-        return (f"Email Verified: {email_verified}\n"
+        return (f"HIT SUCCESSFULLY✅\n"
+                f"Email Verified: {email_verified}\n"
                 f"Account Creation Date: {account_creation_date}\n"
                 f"Subscription Name: {subscription_name}\n"
                 f"Currency: {currency}\n"
                 f"Subscription Amount: {subscription_amount}")
     else:
-        return "Invalid credentials or missing required field."
+        return "Invalid Credentials🚫"
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
