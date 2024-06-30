@@ -8,17 +8,16 @@ def process_nonsk1_command(bot, message):
         total_cards = len(card_data)
         start_time = time.time()
         results = []
-        initial_message = "*↯ NONSK1 GATE*\n\n"
-        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username), parse_mode="Markdown")
+        initial_message = "↯ NONSK1 GATE\n\n"
+        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
         for card in card_data:
             result = check_card_details(card)
-            results.append(f"*Combo:* `{card}`\n*Result =>* {result}")
+            results.append(f"Combo: {card}\nResult => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
-                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_cards, start_time, message.from_user.username),
-                parse_mode="Markdown"
+                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_cards, start_time, message.from_user.username)
             )
 
     else:
@@ -98,35 +97,35 @@ def check_card_details(card):
         result_2 = response_2.text
 
         if "payment_intent_unexpected_state" in result_2:
-            return "Payment Intent Confirmed ⚠️"
+            return "Payment Intent Confirmed"
         elif "succeeded" in result_2:
-            return "CHARGED ✅"
+            return "CHARGED"
         elif "Your card has insufficient funds." in result_2:
-            return "INSUFFICIENT FUNDS ✅"
+            return "INSUFFICIENT FUNDS"
         elif "incorrect_zip" in result_2:
-            return "CVV LIVE ✅"
+            return "CVV LIVE"
         elif "insufficient_funds" in result_2:
-            return "INSUFFICIENT FUNDS ✅"
+            return "INSUFFICIENT FUNDS"
         elif "security code is incorrect" in result_2:
-            return "CCN LIVE ✅"
+            return "CCN LIVE"
         elif "transaction_not_allowed" in result_2:
-            return "CVV LIVE ✅"
+            return "CVV LIVE"
         elif "stripe_3ds2_fingerprint" in result_2:
-            return "3D REQUIRED ✅"
+            return "3D REQUIRED"
         elif '"cvc_check": "pass"' in result_2:
-            return "CHARGED €5 ✅"
+            return "CHARGED €5"
         elif "Membership Confirmation" in result_2:
-            return "Membership Confirmation ✅"
+            return "Membership Confirmation"
         elif "Thank you for your support!" in result_2:
-            return "CHARGED ✅"
+            return "CHARGED"
         elif "Thank you for your donation" in result_2:
-            return "CHARGED ✅"
+            return "CHARGED"
         elif "incorrect_number" in result_1:
-            return "Your card number is incorrect. ❌"
+            return "Your card number is incorrect."
         elif '"status":"incomplete"' in result_2:
-            return "Your card was declined. ❌"
+            return "Your card was declined."
         else:
-            return "DEAD ❌"
+            return "DEAD"
 
     except Exception as e:
         print(f"An error occurred in check_card_details: {str(e)}")  # Log error for debugging
@@ -135,11 +134,11 @@ def check_card_details(card):
 def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
-        f"*－－－－－－－－－－－－－－－－*\n"
-        f"*⌧ Total ACCOUNT Checked - {total_cards}*\n"
-        f"*⌧ Time Taken - {elapsed_time:.2f} seconds*\n"
-        f"*⌧ Checked by: {username}*\n"
-        f"*⚡️ Bot by - AFTAB [BOSS]*\n"
-        f"*－－－－－－－－－－－－－－－－*"
+        f"－－－－－－－－－－－－－－－－\n"
+        f"⌧ Total ACCOUNT Checked - {total_cards}\n"
+        f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
+        f"⌧ Checked by: {username}\n"
+        f"⚡️ Bot by - AFTAB [BOSS]\n"
+        f"－－－－－－－－－－－－－－－－"
     )
     return footer
