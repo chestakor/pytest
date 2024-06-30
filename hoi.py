@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 def process_hoi_command(bot, message):
     chat_id = message.chat.id
@@ -8,7 +9,7 @@ def process_hoi_command(bot, message):
         total_accounts = len(account_data)
         start_time = time.time()
         results = []
-        initial_message = "↯ HOICHOI ACCOUNT\n\n"
+        initial_message = "↯ HOI ACCOUNT\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_accounts, start_time, message.from_user.username))
 
         for account in account_data:
@@ -74,6 +75,8 @@ def check_hoi_account(account):
         else:
             return f"Unexpected response: {response_data}"
 
+    except json.JSONDecodeError:
+        return "Failed to decode JSON response."
     except Exception as e:
         print(f"An error occurred in check_hoi_account: {str(e)}")  # Log error for debugging
         return f"An error occurred while checking the account: {str(e)}"
