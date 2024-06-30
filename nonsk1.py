@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 def process_nonsk1_command(bot, message):
     chat_id = message.chat.id
@@ -124,8 +125,19 @@ def check_card_details(card):
             return "Your card number is incorrect."
         elif '"status":"incomplete"' in result_2:
             return "Your card was declined."
+        elif "Your card was declined." in result_2:
+            return "Your card was declined."
+        elif "card_declined" in result_2:
+            return "Your card was declined."
         else:
-            return f"DEAD\nRaw response 1: {result_1}\nRaw response 2: {result_2}"
+            try:
+                result_2_json = json.loads(result_2)
+                if "message" in result_2_json:
+                    return f"DEAD\nMessage: {result_2_json['message']}"
+                else:
+                    return f"DEAD\nRaw response 2: {result_2}"
+            except json.JSONDecodeError:
+                return f"DEAD\nRaw response 2: {result_2}"
 
     except Exception as e:
         print(f"An error occurred in check_card_details: {str(e)}")  # Log error for debugging
