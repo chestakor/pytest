@@ -41,6 +41,10 @@ def check_seedr_account(account):
     }
 
     response = requests.post(login_url, headers=headers, json=data)
+    
+    if response.status_code == 400:
+        return "Incorrect Email OR Password❌"
+
     response_data = response.json()
 
     if response_data.get("error"):
@@ -48,8 +52,14 @@ def check_seedr_account(account):
     else:
         email = response_data.get("email", "Unknown")
         is_premium = response_data.get("is_premium", False)
-        rss_session = response_data["cookies"]["RSESS_session"]
-        rss_remember = response_data["cookies"]["RSESS_remember"]
+
+        # Ensure that cookies exist in the response
+        cookies = response.cookies.get_dict()
+        rss_session = cookies.get("RSESS_session")
+        rss_remember = cookies.get("RSESS_remember")
+
+        if not rss_session or not rss_remember:
+            return "Failed to retrieve session cookies"
 
         # Perform the second HTTP request to get account settings
         settings_url = "https://www.seedr.cc/account/settings"
