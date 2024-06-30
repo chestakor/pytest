@@ -1,8 +1,7 @@
 import telebot
-from telebot import types
 from keep_alive import keep_alive
-import str1  # Example for /chk command
-import seedr  # Example for /seedr command
+import str1  # Import str1.py for the /chk command
+import seedr  # Import seedr.py for the /seedr command
 import nonsk1  # Import nonsk1.py for the /nonsk1 command
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
