@@ -77,9 +77,6 @@ def check_hoi_account(account):
 
     except json.JSONDecodeError:
         return "Failed to decode JSON response."
-    except Exception as e:
-        print(f"An error occurred in check_hoi_account: {str(e)}")  # Log error for debugging
-        return f"An error occurred while checking the account: {str(e)}"
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
