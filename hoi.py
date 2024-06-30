@@ -1,6 +1,5 @@
 import requests
 import time
-import json
 
 def process_hoi_command(bot, message):
     chat_id = message.chat.id
@@ -35,8 +34,8 @@ def check_hoi_account(account):
             "Accept": "application/json, text/plain, */*",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-US,en;q=0.9",
-            "Origin": "https://www.hoichoi.tv",
-            "Referer": "https://www.hoichoi.tv/",
+            "Origin": "https://www.hoichoitv",
+            "Referer": "https://www.hoichoitv",
             "x-api-key": "PBSooUe91s7RNRKnXTmQG7z3gwD2aDTA6TlJp6ef"
         }
         data = {
@@ -58,7 +57,7 @@ def check_hoi_account(account):
                 "Accept-Encoding": "gzip, deflate, br",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Authorization": token,
-                "Referer": "https://www.hoichoi.tv/",
+                "Referer": "https://www.hoichoitv",
                 "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
                 "x-api-key": "PBSooUe91s7RNRKnXTmQG7z3gwD2aDTA6TlJp6ef"
             }
@@ -75,10 +74,7 @@ def check_hoi_account(account):
         else:
             return f"Unexpected response: {response_data}"
 
-    except json.JSONDecodeError:
-        return "Failed to decode JSON response."
-    except Exception as e:
-        print(f"An error occurred in check_hoi_account: {str(e)}")  # Log error for debugging
+    except requests.exceptions.RequestException as e:
         return f"An error occurred while checking the account: {str(e)}"
 
 def get_footer_info(total_accounts, start_time, username):
