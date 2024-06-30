@@ -14,7 +14,7 @@ def process_nonsk1_command(bot, message):
 
         for card in card_data:
             result = check_card_details(card)
-            results.append(f"Combo: {card}\nResult => {result}")
+            results.append(f"CC: {card}\nResult => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
@@ -100,35 +100,35 @@ def check_card_details(card):
         if "payment_intent_unexpected_state" in result_2:
             return "Payment Intent Confirmed"
         elif "succeeded" in result_2:
-            return "CHARGED"
+            return "CHARGED✅"
         elif "Your card has insufficient funds." in result_2:
-            return "INSUFFICIENT FUNDS"
+            return "INSUFFICIENT FUNDS❎"
         elif "incorrect_zip" in result_2:
-            return "CVV LIVE"
+            return "CVV LIVE❎"
         elif "insufficient_funds" in result_2:
-            return "INSUFFICIENT FUNDS"
+            return "INSUFFICIENT FUNDS❎"
         elif "security code is incorrect" in result_2:
-            return "CCN LIVE"
+            return "CCN LIVE❎"
         elif "transaction_not_allowed" in result_2:
-            return "CVV LIVE"
+            return "CVV LIVE❎"
         elif "stripe_3ds2_fingerprint" in result_2:
             return "3D REQUIRED"
         elif '"cvc_check": "pass"' in result_2:
-            return "CHARGED €5"
+            return "CHARGED✅"
         elif "Membership Confirmation" in result_2:
-            return "Membership Confirmation"
+            return "Membership Confirmation✅"
         elif "Thank you for your support!" in result_2:
-            return "CHARGED"
+            return "CHARGED✅"
         elif "Thank you for your donation" in result_2:
-            return "CHARGED"
+            return "CHARGED✅"
         elif "incorrect_number" in result_1:
-            return "Your card number is incorrect."
+            return "Your card number is incorrect.❌"
         elif '"status":"incomplete"' in result_2:
-            return "Your card was declined."
+            return "Your card was declined.❌"
         elif "Your card was declined." in result_2:
-            return "Your card was declined."
+            return "Your card was declined.❌"
         elif "card_declined" in result_2:
-            return "Your card was declined."
+            return "Your card was declined.❌"
         else:
             try:
                 result_2_json = json.loads(result_2)
@@ -147,7 +147,7 @@ def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"⌧ Total ACCOUNT Checked - {total_cards}\n"
+        f"⌧ Total CC Checked - {total_cards}\n"
         f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
         f"⌧ Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB [BOSS]\n"
