@@ -1,6 +1,5 @@
 import requests
 import time
-import json
 
 def process_seedr_command(bot, message):
     chat_id = message.chat.id
@@ -87,10 +86,7 @@ def check_seedr_account(account):
                     f"Storage: {storage_gb} GB\n"
                     f"Package: {package_name}\n"
                     f"Country: {country}")
-    except json.JSONDecodeError:
-        return "Failed to decode JSON response."
-    except Exception as e:
-        print(f"An error occurred in check_seedr_account: {str(e)}")  # Log error for debugging
+    except requests.exceptions.RequestException as e:
         return f"An error occurred while checking the account: {str(e)}"
 
 def convert_bytes_to_gb(bytes):
