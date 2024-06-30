@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 def process_seedr_command(bot, message):
     chat_id = message.chat.id
@@ -44,28 +45,57 @@ def check_seedr_account(account):
         response = requests.post(login_url, headers=headers, json=data)
         response_data = response.json()
 
-        if response_data.get("status_code") == 400:
-            return "Incorrect Email OR Password❌"
+        if response_data.get("error"):
+            return f"Incorrect Email OR Password❌"
         else:
-            account_info = response_data.get("account", {})
-            storageGB = convert_bytes_to_gb(account_info.get("space_max", 0))
-            package_name = account_info.get("package_name", "NON-PREMIUM")
-            country = response_data.get("country", "N/A")
+            email = response_data.get("email", "Unknown")
+            is_premium = response_data.get("is_premium", False)
+            rss_session = response_data["cookies"]["RSESS_session"]
+            rss_remember = response_data["cookies"]["RSESS_remember"]
+
+            # Perform the second HTTP request to get account settings
+            settings_url = "https://www.seedr.cc/account/settings"
+            settings_headers = {
+                'accept': 'application/json, text/plain, */*',
+                'accept-language': 'en-US,en;q=0.9',
+                'cookie': f'RSESS_session={rss_session}; RSESS_remember={rss_remember}',
+                'priority': 'u=1, i',
+                'referer': 'https://www.seedr.cc/files',
+                'sec-ch-ua': '"Chromium";v="124", "Microsoft Edge";v="124", "Not-A.Brand";v="99"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0'
+            }
+
+            settings_response = requests.get(settings_url, headers=settings_headers)
+            settings_data = settings_response.json()
+
+            # Extract necessary information from the response
+            account = settings_data.get("account", {})
+            storage_max = account.get("space_max", 0)
+            package_name = account.get("package_name", "NON-PREMIUM")
+            country = settings_data.get("country", "N/A")
+
+            # Convert storage from bytes to GB
+            storage_gb = convert_bytes_to_gb(storage_max)
 
             return (f"HIT SUCCESSFULLY\n"
-                    f"Premium: {account_info.get('premium', False)}\n"
-                    f"Storage: {storageGB} GB\n"
+                    f"Premium: {is_premium}\n"
+                    f"Storage: {storage_gb} GB\n"
                     f"Package: {package_name}\n"
                     f"Country: {country}")
+    except json.JSONDecodeError:
+        return "Failed to decode JSON response."
     except Exception as e:
         print(f"An error occurred in check_seedr_account: {str(e)}")  # Log error for debugging
         return f"An error occurred while checking the account: {str(e)}"
 
 def convert_bytes_to_gb(bytes):
-    if bytes is None:
-        return "0.00"
     gb = bytes / (1024 * 1024 * 1024)
-    return f"{gb:.2f}"  # Limiting to 2 decimal places
+    return round(gb, 2)
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
