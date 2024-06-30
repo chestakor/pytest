@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 def process_hoi_command(bot, message):
     chat_id = message.chat.id
