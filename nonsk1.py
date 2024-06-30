@@ -9,7 +9,7 @@ def process_nonsk1_command(bot, message):
         total_cards = len(card_data)
         start_time = time.time()
         results = []
-        initial_message = "↯ NONSK1 GATE\n\n"
+        initial_message = "↯ NONSK MASS GATE\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
         for card in card_data:
@@ -147,10 +147,10 @@ def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"⌧ Total CC Checked - {total_cards}\n"
-        f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
-        f"⌧ Checked by: {username}\n"
-        f"⚡️ Bot by - AFTAB [BOSS]\n"
+        f"⚫️ Total CC Checked - {total_cards}\n"
+        f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
+        f"▫️ Checked by: {username}\n"
+        f"⚡️ Bot by - AFTAB 👑\n"
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
