@@ -44,7 +44,10 @@ def check_hoi_account(account):
 
     response = requests.post(login_url, headers=headers, json=data)
     response_data = response.json()
-
+    
+    if isinstance(response_data, str):
+        response_data = json.loads(response_data)
+    
     if any(key in response_data.get("error", {}).get("message", "") for key in ["Sorry, we can't find an account with this email address", "EMAIL_NOT_REGISTERED", "EMAIL_OR_PASSWORD_INCORRECT", "Your email or password is incorrect"]):
         return "Incorrect Email OR Password❌"
     elif "authorizationToken" in response_data:
