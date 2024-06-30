@@ -49,7 +49,7 @@ def check_seedr_account(account):
         else:
             account_info = response_data.get("account", {})
             storageGB = convert_bytes_to_gb(account_info.get("space_max", 0))
-            package_name = account_info.get("package_name", "Unknown")
+            package_name = account_info.get("package_name", "NON-PREMIUM")
             country = response_data.get("country", "N/A")
 
             return (f"HIT SUCCESSFULLY\n"
@@ -62,6 +62,8 @@ def check_seedr_account(account):
         return f"An error occurred while checking the account: {str(e)}"
 
 def convert_bytes_to_gb(bytes):
+    if bytes is None:
+        return "0.00"
     gb = bytes / (1024 * 1024 * 1024)
     return f"{gb:.2f}"  # Limiting to 2 decimal places
 
