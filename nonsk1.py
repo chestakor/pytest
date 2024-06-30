@@ -1,5 +1,6 @@
 import requests
 import time
+import re
 
 def process_nonsk1_command(bot, message):
     chat_id = message.chat.id
@@ -125,11 +126,18 @@ def check_card_details(card):
         elif '"status":"incomplete"' in result_2:
             return "Your card was declined."
         else:
-            return "DEAD"
+            msg = extract_message(result_2)
+            return f"DEAD\nMessage: {msg}"
 
     except Exception as e:
         print(f"An error occurred in check_card_details: {str(e)}")  # Log error for debugging
         return f"An error occurred while checking the card: {str(e)}"
+
+def extract_message(response_text):
+    match = re.search(r'<div id="pmpro_message_bottom" class="pmpro_message pmpro_error">(.*?)</div>', response_text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return "No specific message found."
 
 def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
