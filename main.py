@@ -5,6 +5,7 @@ import seedr  # Example for /seedr command
 import nonsk1  # Example for /nonsk1 command
 import hoi  # Example for /hoi command
 import crunchy
+import grab
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -37,6 +38,11 @@ def check_hoi_command(message):
 def check_crunchy_command(message):
     chat_id = message.chat.id
     crunchy.process_crunchy_command(bot, message)
+
+@bot.message_handler(commands=['grab'])
+def grab_command(message):
+    chat_id = message.chat.id
+    grab.process_grab_command(bot, message)
 
 if __name__ == "__main__":
     keep_alive()
