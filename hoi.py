@@ -8,7 +8,7 @@ def process_hoi_command(bot, message):
         total_accounts = len(account_data)
         start_time = time.time()
         results = []
-        initial_message = "↯ HOI ACCOUNT\n\n"
+        initial_message = "↯ HOICHOI ACCOUNT\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_accounts, start_time, message.from_user.username))
 
         for account in account_data:
