@@ -15,9 +15,11 @@ bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
-    gif_path = "IMG_9988.gif"  # Correct path to the file
-    with open(gif_path, 'rb') as gif_file:
-        bot.send_animation(chat_id, gif_file, caption="Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
+    bot.send_message(chat_id, "Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
+    
+    gif_path = 'IMG_9988.gif'  # Ensure this path is correct
+    with open(gif_path, 'rb') as gif:
+        bot.send_video(chat_id, gif)
 
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
