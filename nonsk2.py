@@ -1,6 +1,7 @@
 import requests
 import time
 import re
+import base64  # Add this import statement
 from bs4 import BeautifulSoup
 
 def process_nonsk2_command(bot, message):
