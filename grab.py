@@ -78,7 +78,6 @@ def format_response(data, url, elapsed_time, username):
     if isinstance(data, str):
         return data
     return (f"↯ CS PK GRABBER\n\n"
-            f"URL: {url}\n"
             f"Result:\n"
             f"Name: {data['name']}\n"
             f"PK Live: {data['pklive']}\n"
