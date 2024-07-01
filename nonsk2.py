@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import base64
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
@@ -40,6 +41,13 @@ def check_nonsk2(card):
             url = f"https://my.api.mockaroo.com/{country}.json?key={key}"
             response = requests.get(url, headers={'User-Agent': user_agent}, cookies=cookies)
             user_data = response.json()
+
+            # Ensure all expected fields are present
+            required_fields = ['first', 'last', 'email', 'phone', 'street', 'zip', 'city', 'state1', 'state2']
+            for field in required_fields:
+                if field not in user_data:
+                    raise ValueError(f"Missing field in Mockaroo response: {field}")
+
             first = user_data['first']
             last = user_data['last']
             email = user_data['email']
