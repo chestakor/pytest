@@ -5,6 +5,7 @@ import random
 import string
 import requests
 import user_agent
+import time
 
 def generate_full_name():
     first_names = ["Ahmed", "Mohamed", "Fatima", "Zainab", "Sarah", "Omar", "Layla", "Youssef", "Nour",
