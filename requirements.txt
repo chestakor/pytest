@@ -1,4 +1,4 @@
 flask
 pyTelegramBotAPI
 requests
-beautifulsoup4
+user_agent
