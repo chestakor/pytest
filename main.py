@@ -14,7 +14,7 @@ bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Hello, sir!")
+    bot.send_message(chat_id, "Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
 
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
