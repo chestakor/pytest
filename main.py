@@ -6,6 +6,7 @@ import nonsk1  # Example for /nonsk1 command
 import hoi  # Example for /hoi command
 import crunchy
 import grab
+import nonsk2
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -43,6 +44,11 @@ def check_crunchy_command(message):
 def grab_command(message):
     chat_id = message.chat.id
     grab.process_grab_command(bot, message)
+
+@bot.message_handler(commands=['nonsk2'])
+def check_nonsk2_command(message):
+    chat_id = message.chat.id
+    nonsk2.process_nonsk2_command(bot, message)
 
 if __name__ == "__main__":
     keep_alive()
