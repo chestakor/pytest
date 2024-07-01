@@ -17,7 +17,7 @@ def send_welcome(message):
     chat_id = message.chat.id
     gif_path = "IMG_9988.gif"  # Correct path to the file
     with open(gif_path, 'rb') as gif_file:
-        bot.send_document(chat_id, gif_file, caption="Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
+        bot.send_animation(chat_id, gif_file, caption="Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
 
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
