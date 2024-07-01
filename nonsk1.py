@@ -116,6 +116,8 @@ def check_card_details(card):
             return "CVV LIVE❎"
         elif "stripe_3ds2_fingerprint" in result_2:
             return "3D REQUIRED"
+        elif "redirect_url" in result_2:
+            return "Approved\n3DS Required❎"
         elif '"cvc_check": "pass"' in result_2:
             return "CHARGED✅"
         elif "Membership Confirmation" in result_2:
