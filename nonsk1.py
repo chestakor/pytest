@@ -67,6 +67,9 @@ def check_card_details(card):
         response_1 = requests.post(token_url, headers=headers_1, data=data_1)
         result_1 = response_1.json()
 
+        if response_1.status_code != 200 or "error" in result_1:
+            return f"Error creating token: {result_1.get('error', {}).get('message', 'Unknown error')}"
+
         token_id = result_1.get("id", "")
         brand = result_1.get("card", {}).get("brand", "Unknown")
 
