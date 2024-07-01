@@ -7,6 +7,7 @@ import hoi  # Example for /hoi command
 import crunchy
 import grab
 import nonsk2
+import help
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -49,6 +50,10 @@ def grab_command(message):
 def check_nonsk2_command(message):
     chat_id = message.chat.id
     nonsk2.process_nonsk2_command(bot, message)
+
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    help.process_help_command(bot, message)
 
 if __name__ == "__main__":
     keep_alive()
