@@ -42,21 +42,16 @@ def check_nonsk2(card):
             response = requests.get(url, headers={'User-Agent': user_agent}, cookies=cookies)
             user_data = response.json()
 
-            # Ensure all expected fields are present
-            required_fields = ['first', 'last', 'email', 'phone', 'street', 'zip', 'city', 'state1', 'state2']
-            for field in required_fields:
-                if field not in user_data:
-                    raise ValueError(f"Missing field in Mockaroo response: {field}")
-
-            first = user_data['first']
-            last = user_data['last']
-            email = user_data['email']
-            phone = user_data['phone']
-            street = user_data['street']
-            zip_code = user_data['zip']
-            city = user_data['city']
-            state1 = user_data['state1']
-            state2 = user_data['state2']
+            # Set default values for fields in case they are missing
+            first = user_data.get('first', 'John')
+            last = user_data.get('last', 'Doe')
+            email = user_data.get('email', 'john.doe@example.com')
+            phone = user_data.get('phone', '555-555-5555')
+            street = user_data.get('street', '123 Main St')
+            zip_code = user_data.get('zip', '12345')
+            city = user_data.get('city', 'Anytown')
+            state1 = user_data.get('state1', 'CA')
+            state2 = user_data.get('state2', 'CA')
 
             # Fetch IP
             response = requests.get("https://api.ipify.org/", headers={'User-Agent': user_agent}, cookies=cookies)
