@@ -15,7 +15,8 @@ import weather
 import address
 import gen
 import bin
-import gen
+import sk
+import info
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -107,6 +108,10 @@ def generate_cc_command(message):
 @bot.message_handler(commands=['sk'])
 def handle_sk(message):
     sk.process_sk_command(bot, message)
+
+@bot.message_handler(commands=['info'])
+def handle_info(message):
+    info.process_info_command(bot, message)
 
 @bot.message_handler(commands=['address'])
 def address_command(message):
