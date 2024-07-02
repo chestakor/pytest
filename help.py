@@ -37,23 +37,21 @@ tool_text = (
     "- Status: ACTIVE ✅\n"
 )
 
-# Function to process the /help command
 def process_help_command(bot, message):
     chat_id = message.chat.id
     gate_keyboard = types.InlineKeyboardMarkup(row_width=1)
     gate_keyboard.add(types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'))
     
-    bot.send_message(chat_id, gate_text, parse_mode='HTML', reply_markup=gate_keyboard)
+    bot.send_message(chat_id, gate_text, reply_markup=gate_keyboard)
 
-@bot.callback_query_handler(func=lambda call: call.data in ['show_tools', 'show_gates'])
-def handle_help_callback_query(call):
+def handle_help_callback_query(bot, call):
     if call.data == 'show_tools':
         tool_keyboard = types.InlineKeyboardMarkup(row_width=1)
         tool_keyboard.add(types.InlineKeyboardButton('GATES ✨', callback_data='show_gates'))
         
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=tool_text, parse_mode='HTML', reply_markup=tool_keyboard)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=tool_text, reply_markup=tool_keyboard)
     elif call.data == 'show_gates':
         gate_keyboard = types.InlineKeyboardMarkup(row_width=1)
         gate_keyboard.add(types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'))
         
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=gate_text, parse_mode='HTML', reply_markup=gate_keyboard)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=gate_text, reply_markup=gate_keyboard)
