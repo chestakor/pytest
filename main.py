@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 from keep_alive import keep_alive
 import str1  # Example for /chk command
 import seedr  # Example for /seedr command
@@ -7,26 +8,9 @@ import hoi  # Example for /hoi command
 import crunchy
 import grab
 import nonsk2
-import help
 import nonsk3
-from telebot import types
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
-
-welcome_text = (
-    "Hello, sir!\n"
-    "Use /help to know all command\n"
-    "Owner: Aftab👑\n\n"
-    "－－－－－－－－－－－－－－－－\n"
-    "            WELCOME 💬\n"
-    "－－－－－－－－－－－－－－－－\n"
-    " • PREMIUM ➢ 8\n"
-    " • STANDARD ➢ 5\n"
-    " • FREE ➢ 3\n\n"
-    "－－－－－－－－－－－－－－－－\n"
-    " • Dev ➣ @aftab_kabir\n"
-    "－－－－－－－－－－－－－－－－"
-)
 
 premium_text = (
     "### [GATES]\n\n"
@@ -64,28 +48,60 @@ free_text = (
     "- Status: ACTIVE ✅\n"
 )
 
-gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
-gates_keyboard.add(
-    types.InlineKeyboardButton('GATE ✨', callback_data='premium'),
-    types.InlineKeyboardButton('TOOLS 🥁', callback_data='free'),
-    types.InlineKeyboardButton('HOME', callback_data='home')
-)
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
+    welcome_text = (
+        "Hello, sir!\n"
+        "Use /help to know all command\n"
+        "Owner: Aftab👑\n\n"
+    )
+    gates_text = (
+        "－－－－－－－－－－－－－－－－\n"
+        "            WELCOME  💬\n"
+        "－－－－－－－－－－－－－－－－\n"
+        " •├PREMIUM ➢ 8\n"
+        " •├STANDARD ➢ 5\n"
+        " •├FREE ➢ 3\n\n"
+        "－－－－－－－－－－－－－－－－\n"
+        " •├Dev ➣ @aftab_kabir\n"
+        "－－－－－－－－－－－－－－－－"
+    )
+    
+    full_caption = welcome_text + gates_text
+    
+    gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
+    gates_keyboard.add(
+        types.InlineKeyboardButton('GATE ✨', callback_data='show_gates'),
+        types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'),
+        types.InlineKeyboardButton('HOME', callback_data='home')
+    )
+    
     video_url = "https://link.anshbotzone.tech/349273/ezgif.com-gif-to-mp4-converter.mp4?hash=50dd83"
-    bot.send_video(chat_id, video_url, caption=welcome_text, parse_mode='HTML', reply_markup=gates_keyboard)
+    
+    bot.send_video(chat_id, video_url, caption=full_caption, reply_markup=gates_keyboard)
 
-@bot.callback_query_handler(func=lambda call: call.data in ['premium', 'free', 'home'])
+@bot.callback_query_handler(func=lambda call: call.data in ['show_gates', 'show_tools', 'home'])
 def handle_callback_query(call):
-    if call.data == 'premium':
-        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=premium_text, parse_mode='HTML', reply_markup=gates_keyboard)
-    elif call.data == 'free':
-        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=free_text, parse_mode='HTML', reply_markup=gates_keyboard)
+    if call.data == 'show_gates':
+        gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
+        gates_keyboard.add(
+            types.InlineKeyboardButton('GATE ✨', callback_data='show_gates'),
+            types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'),
+            types.InlineKeyboardButton('HOME', callback_data='home')
+        )
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=premium_text, reply_markup=gates_keyboard)
+    elif call.data == 'show_tools':
+        tools_keyboard = types.InlineKeyboardMarkup(row_width=2)
+        tools_keyboard.add(
+            types.InlineKeyboardButton('GATE ✨', callback_data='show_gates'),
+            types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'),
+            types.InlineKeyboardButton('HOME', callback_data='home')
+        )
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=free_text, reply_markup=tools_keyboard)
     elif call.data == 'home':
-        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=welcome_text, parse_mode='HTML', reply_markup=gates_keyboard)
-        
+        send_welcome(call.message)
+
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
     chat_id = message.chat.id
@@ -123,11 +139,10 @@ def check_nonsk2_command(message):
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    help.process_help_command(bot, message)
-
-@bot.message_handler(commands=['nsk3'])
-def handle_nsk3(message):
-    nonsk3.handle_nonsk3_command(bot, message)
+    chat_id = message.chat.id
+    gate_keyboard = types.InlineKeyboardMarkup(row_width=1)
+    gate_keyboard.add(types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'))
+    bot.send_message(chat_id, premium_text, reply_markup=gate_keyboard)
 
 if __name__ == "__main__":
     keep_alive()
