@@ -15,6 +15,7 @@ import weather
 import address
 import gen
 import bin
+import gen
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -102,6 +103,10 @@ def bin_command(message):
 @bot.message_handler(commands=['gen'])
 def generate_cc_command(message):
     gen.process_gen_command(bot, message)
+
+@bot.message_handler(commands=['sk'])
+def handle_sk(message):
+    sk.process_sk_command(bot, message)
 
 @bot.message_handler(commands=['address'])
 def address_command(message):
