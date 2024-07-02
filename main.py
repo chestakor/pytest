@@ -13,6 +13,7 @@ from telebot import types
 import clean
 import weather
 import address
+import gen
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -92,6 +93,10 @@ def handle_callback_query(call):
 def check_card_command(message):
     chat_id = message.chat.id
     str1.process_chk_command(bot, message)
+
+@bot.message_handler(commands=['gen'])
+def generate_cc_command(message):
+    gen.process_gen_command(bot, message)
 
 @bot.message_handler(commands=['address'])
 def address_command(message):
