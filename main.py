@@ -10,6 +10,7 @@ import nonsk2
 import help
 import nonsk3
 from telebot import types
+import clean
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -192,6 +193,10 @@ def handle_help_callback(call):
 @bot.message_handler(commands=['nsk3'])
 def handle_nsk3(message):
     nonsk3.handle_nonsk3_command(bot, message)
+
+@bot.message_handler(commands=['clean'])
+def clean_command(message):
+    clean.process_clean_command(bot, message)
 
 if __name__ == "__main__":
     keep_alive()
