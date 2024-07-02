@@ -15,11 +15,36 @@ bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Hello, sir!\nUse /help to know all command\nOwner: Aftab👑")
+    gates_text = (
+        "－－－－－－－－－－－－－－－－\n"
+        "            𝗪𝗘𝗟𝗖𝗢𝗠𝗘  💬\n"
+        "－－－－－－－－－－－－－－－－\n"
+        " •├𝗣𝗥𝗘𝗠𝗜𝗨𝗠 ➢ 8\n"
+        " •├𝗦𝗧𝗔𝗡𝗗𝗔𝗥𝗗 ➢ 5\n"
+        " •├𝗙𝗥𝗘𝗘 ➢ 3\n\n"
+        "－－－－－－－－－－－－－－－－\n"
+        " •├Dev ➣ @aftab_kabir\n"
+        "－－－－－－－－－－－－－－－－"
+    )
     
-    gif_path = 'IMG_9988.gif'  # Ensure this path is correct
-    with open(gif_path, 'rb') as gif:
-        bot.send_video(chat_id, gif)
+    welcome_text = (
+        "Hello, sir!\n"
+        "Use /help to know all command\n"
+        "Owner: Aftab👑\n\n"
+    )
+    
+    full_caption = welcome_text + gates_text
+    
+    gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
+    gates_keyboard.add(
+        types.InlineKeyboardButton('𝗦𝗧𝗔𝗡𝗗𝗔𝗥𝗗 ✨', callback_data='premium'),
+        types.InlineKeyboardButton('𝗙𝗥𝗘𝗘 🥁', callback_data='free'),
+        types.InlineKeyboardButton('𝗛𝗢𝗠𝗘', callback_data='back2')
+    )
+    
+    video_url = "https://link.anshbotzone.tech/349273/ezgif.com-gif-to-mp4-converter.mp4?hash=50dd83"
+    
+    bot.send_video(chat_id, video_url, caption=full_caption, parse_mode='HTML', reply_markup=gates_keyboard)
 
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
