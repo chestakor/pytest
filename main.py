@@ -14,18 +14,17 @@ from telebot import types
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
 welcome_text = (
-    "Hello, sir!\n"
-    "Use /help to know all command\n"
-    "Owner: Aftab👑\n\n"
     "－－－－－－－－－－－－－－－－\n"
-    "            WELCOME 💬\n"
+    "              WELCOME 💬\n"
     "－－－－－－－－－－－－－－－－\n"
-    " • PREMIUM ➢ 8\n"
-    " • STANDARD ➢ 5\n"
-    " • FREE ➢ 3\n\n"
+    " • GATES ➢ 3[Test]\n"
+    " • TOOLS ➢ 4\n"
     "－－－－－－－－－－－－－－－－\n"
     " • Dev ➣ @aftab_kabir\n"
     "－－－－－－－－－－－－－－－－"
+    "I'm Jarvis!\n"
+    "Use /help to know all command\n"
+    "Owner: Aftab👑\n\n"
 )
 
 premium_text = (
