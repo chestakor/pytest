@@ -5,15 +5,17 @@ import time
 
 def process_grab_command(bot, message):
     chat_id = message.chat.id
-    url = message.text.split()[1]  # Get the URL from the command
-    if url:
-        start_time = time.time()
-        result = grab_details(url)
-        elapsed_time = time.time() - start_time
-        response_message = format_response(result, url, elapsed_time, message.from_user.username)
-        bot.send_message(chat_id, response_message)
-    else:
+    command_parts = message.text.split(maxsplit=1)
+    if len(command_parts) < 2:
         bot.send_message(chat_id, "Please provide a URL in the format: /grab url")
+        return
+    
+    url = command_parts[1]
+    start_time = time.time()
+    result = grab_details(url)
+    elapsed_time = time.time() - start_time
+    response_message = format_response(result, url, elapsed_time, message.from_user.username)
+    bot.send_message(chat_id, response_message)
 
 def grab_details(checkout):
     try:
