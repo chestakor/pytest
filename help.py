@@ -1,8 +1,5 @@
 from telebot import types
 
-# Import the bot instance
-from main import bot
-
 # Define the gate and tool texts
 gate_text = (
     "### [GATES]\n\n"
