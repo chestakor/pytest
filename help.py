@@ -34,7 +34,9 @@ tool_text = (
     "- Status: Coming Soon 🌦\n\n"
     "🌐 Website: Stripe CS PK GRABBER\n"
     "- Format: /grab url\n"
-    "- Status: ACTIVE ✅\n"
+    "- Status: ACTIVE ✅\n\n"
+    "If any problem, contact @aftab_kabir\n"
+    "Owner: Aftab👑"
 )
 
 def process_help_command(bot, message):
@@ -44,7 +46,8 @@ def process_help_command(bot, message):
     
     bot.send_message(chat_id, gate_text, reply_markup=gate_keyboard)
 
-def handle_help_callback_query(bot, call):
+@bot.callback_query_handler(func=lambda call: call.data in ['show_tools', 'show_gates'])
+def handle_help_callback_query(call):
     if call.data == 'show_tools':
         tool_keyboard = types.InlineKeyboardMarkup(row_width=1)
         tool_keyboard.add(types.InlineKeyboardButton('GATES ✨', callback_data='show_gates'))
