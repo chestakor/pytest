@@ -1,5 +1,6 @@
 import requests
 from telebot import types
+import time
 
 def get_bin_info(bin_number):
     try:
