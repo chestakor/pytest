@@ -1,4 +1,4 @@
-def handle_help_command(bot, message):
+def process_help_command(bot, message):
     help_text = (
         "### [GATES]\n\n"
         "**STRIPE Charge - [ TEST ]**\n"
