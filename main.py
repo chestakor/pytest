@@ -9,6 +9,7 @@ import grab
 import nonsk2
 import help
 import nonsk3
+from telebot import types
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
