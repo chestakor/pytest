@@ -13,63 +13,79 @@ from telebot import types
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
+welcome_text = (
+    "Hello, sir!\n"
+    "Use /help to know all command\n"
+    "Owner: Aftab👑\n\n"
+    "－－－－－－－－－－－－－－－－\n"
+    "            WELCOME 💬\n"
+    "－－－－－－－－－－－－－－－－\n"
+    " • PREMIUM ➢ 8\n"
+    " • STANDARD ➢ 5\n"
+    " • FREE ➢ 3\n\n"
+    "－－－－－－－－－－－－－－－－\n"
+    " • Dev ➣ @aftab_kabir\n"
+    "－－－－－－－－－－－－－－－－"
+)
+
+premium_text = (
+    "### [GATES]\n\n"
+    "💳 STRIPE Charge - [ TEST ]\n"
+    "- Format: /chk cc|mon|year|cvv\n"
+    "- Gateway: Stripe » FREE\n"
+    "- Updated: 02:54:04 14-02-2024\n\n"
+    "💳 NONSK CHECKER-1 - [ TEST ]\n"
+    "- Format: /nonsk1 cc|mon|year|cvv\n"
+    "- Gateway: Stripe » FREE\n"
+    "- Updated: 12:58:42 10-02-2024\n\n"
+    "💳 NONSK CHECKER-2 - [ TEST ]\n"
+    "- Format: /nonsk2 cc|mon|year|cvv\n"
+    "- Gateway: Stripe » FREE\n"
+    "- Updated: 17:40:35 20-02-2024\n\n"
+    "(MORE COMING SOON)"
+)
+
+free_text = (
+    "### [TOOL]\n\n"
+    "🌐 Website: Seedr\n"
+    "- Format: /seedr email:pass\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Website: Crunchyroll\n"
+    "- Format: /crunchy email:pass\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Website: Hoichoi\n"
+    "- Format: /hoi email:pass\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Website: Zee5 Global\n"
+    "- Format: /z email:pass\n"
+    "- Status: Coming Soon 🌦\n\n"
+    "🌐 Website: Stripe CS PK GRABBER\n"
+    "- Format: /grab url\n"
+    "- Status: ACTIVE ✅\n"
+)
+
+gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
+gates_keyboard.add(
+    types.InlineKeyboardButton('GATE ✨', callback_data='premium'),
+    types.InlineKeyboardButton('TOOLS 🥁', callback_data='free'),
+    types.InlineKeyboardButton('HOME', callback_data='home')
+)
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
-    welcome_text = (
-        "Hello, sir!\n"
-        "Use /help to know all command\n"
-        "Owner: Aftab👑\n\n"
-    )
-    gates_text = (
-        "－－－－－－－－－－－－－－－－\n"
-        "            𝗪𝗘𝗟𝗖𝗢𝗠𝗘  💬\n"
-        "－－－－－－－－－－－－－－－－\n"
-        " •├𝗣𝗥𝗘𝗠𝗜𝗨𝗠 ➢ 8\n"
-        " •├𝗦𝗧𝗔𝗡𝗗𝗔𝗥𝗗 ➢ 5\n"
-        " •├𝗙𝗥𝗘𝗘 ➢ 3\n\n"
-        "－－－－－－－－－－－－－－－－\n"
-        " •├Dev ➣ @aftab_kabir\n"
-        "－－－－－－－－－－－－－－－－"
-    )
-    
-    full_caption = welcome_text + gates_text
-    
-    gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
-    gates_keyboard.add(
-        types.InlineKeyboardButton('𝗣𝗥𝗘𝗠𝗜𝗨𝗠 ✨', callback_data='premium'),
-        types.InlineKeyboardButton('𝗙𝗥𝗘𝗘 🥁', callback_data='free'),
-        types.InlineKeyboardButton('𝗛𝗢𝗠𝗘', callback_data='home')
-    )
-    
     video_url = "https://link.anshbotzone.tech/349273/ezgif.com-gif-to-mp4-converter.mp4?hash=50dd83"
-    
-    bot.send_video(chat_id, video_url, caption=full_caption, parse_mode='HTML', reply_markup=gates_keyboard)
+    bot.send_video(chat_id, video_url, caption=welcome_text, parse_mode='HTML', reply_markup=gates_keyboard)
 
-@bot.callback_query_handler(func=lambda call: True)
-def handle_callback(call):
+@bot.callback_query_handler(func=lambda call: call.data in ['premium', 'free', 'home'])
+def handle_callback_query(call):
     if call.data == 'premium':
-        update_message(call.message, "### [GATES]\n\n**STRIPE Charge - [ TEST ]**\n- **Format:** /chk cc|mon|year|cvv\n- **Gateway:** Stripe » FREE\n- **Updated:** 02:54:04 14-02-2024\n\n**NONSK CHECKER-1 - [ TEST ]**\n- **Format:** /nonsk1 cc|mon|year|cvv\n- **Gateway:** Stripe » FREE\n- **Updated:** 12:58:42 10-02-2024\n\n**NONSK  CHECKER-2 - [ TEST ]**\n- **Format:** /nonsk2 cc|mon|year|cvv\n- **Gateway:** Stripe » FREE\n- **Updated:** 17:40:35 20-02-2024\n\n(MORE COMING SOON)")
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=premium_text, parse_mode='HTML', reply_markup=gates_keyboard)
     elif call.data == 'free':
-        update_message(call.message, "### [TOOL]\n\nᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳᅳ\n**Website:** Seedr\n- **Format:** /seedr email:pass\n- **Status:** ACTIVE ✅\n\n**Website:** Crunchyroll\n- **Format:** /crunchy email:pass\n- **Status:** ACTIVE ✅\n\n**Website:** Hoichoi\n- **Format:** /hoi email:pass\n- **Status:** ACTIVE ✅\n\n**Website:** Zee5 Global\n- **Format:** /z email:pass\n- **Status:** Coming Soon 🌦\n\n**Website:** Stripe CS PK GRABBER\n- **Format:** /grab url\n- **Status:** ACTIVE ✅")
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=free_text, parse_mode='HTML', reply_markup=gates_keyboard)
     elif call.data == 'home':
-        send_welcome(call.message)
-
-def update_message(message, new_caption):
-    chat_id = message.chat.id
-    message_id = message.message_id
-    
-    gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
-    gates_keyboard.add(
-        types.InlineKeyboardButton('𝗣𝗥𝗘𝗠𝗜𝗨𝗠 ✨', callback_data='premium'),
-        types.InlineKeyboardButton('𝗙𝗥𝗘𝗘 🥁', callback_data='free'),
-        types.InlineKeyboardButton('𝗛𝗢𝗠𝗘', callback_data='home')
-    )
-    
-    video_url = "https://link.anshbotzone.tech/349273/ezgif.com-gif-to-mp4-converter.mp4?hash=50dd83"
-    
-    bot.edit_message_caption(chat_id=chat_id, message_id=message_id, caption=new_caption, parse_mode='HTML', reply_markup=gates_keyboard)
-
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=welcome_text, parse_mode='HTML', reply_markup=gates_keyboard)
+        
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
     chat_id = message.chat.id
