@@ -125,6 +125,10 @@ def check_nonsk2_command(message):
 def help_command(message):
     help.process_help_command(bot, message)
 
+@bot.callback_query_handler(func=lambda call: call.data in ['show_tools', 'show_gates'])
+def handle_help_callback_query(call):
+    help.handle_help_callback_query(call)
+
 @bot.message_handler(commands=['nsk3'])
 def handle_nsk3(message):
     nonsk3.handle_nonsk3_command(bot, message)
