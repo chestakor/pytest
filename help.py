@@ -16,7 +16,7 @@ gate_text = (
     "💳 NONSK CHECKER-2 - [ TEST ]\n"
     "- Format: /nonsk2 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
-    "- Updated: 17:40:35 20-02-2024\n\n"
+    "- Updated: 17:40:35 20-02-2024\n\n
     "(MORE COMING SOON)"
 )
 
@@ -37,8 +37,27 @@ tool_text = (
     "🌐 Website: Stripe CS PK GRABBER\n"
     "- Format: /grab url\n"
     "- Status: ACTIVE ✅\n\n"
-    "If any problem, contact @aftab_kabir\n"
-    "Owner: Aftab👑"
+    "🌐 Weather\n"
+    "- Format: /weather city_name\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Address\n"
+    "- Format: /address\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Clean\n"
+    "- Format: /clean data\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Generate CC\n"
+    "- Format: /gen bin\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Bin\n"
+    "- Format: /bin bin\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Nord VPN\n"
+    "- Format: /nord email:pass\n"
+    "- Status: ACTIVE ✅\n\n"
+    "🌐 Panda VPN\n"
+    "- Format: /panda email:pass\n"
+    "- Status: ACTIVE ✅\n"
 )
 
 def process_help_command(bot, message):
