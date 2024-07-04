@@ -5,3 +5,4 @@ user_agent
 beautifulsoup4
 googletrans==4.0.0-rc1
 telebot
+telethon
