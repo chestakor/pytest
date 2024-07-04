@@ -24,8 +24,7 @@ import bg
 import hma
 import nagad
 import scraper
-import asyncio
-from telethon.sync import TelegramClient
+
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -148,23 +147,16 @@ def check_bg_command(message):
     chat_id = message.chat.id
     bg.process_bg_command(bot, message)
 
-@bot.message_handler(commands=['hma'])
-def handle_hma_command(message):
-    hma.process_hma_command(bot, message)
+@bot.message_handler(commands=['scr'])
+def handle_scr_command(message):
+    scraper.process_scr_command(bot, message)
 
 @bot.message_handler(commands=['scr'])
-def scr_command(message):
-    command_parts = message.text.split()
-    if len(command_parts) != 3:
-        bot.reply_to(message, "Please provide a valid command in the format: /scr <channel_link> <num_messages>")
-        return
-    chat_link = command_parts[1]
-    num_messages = int(command_parts[2])
-    asyncio.run(scraper.scrape_cc(chat_link, num_messages, message.chat.id, bot))
+ def scr_command(message):
+     scr.process_scr_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
-    import nord
     nord.process_nord_command(bot, message)
 
 @bot.message_handler(commands=['gen'])
