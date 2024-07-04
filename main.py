@@ -19,6 +19,7 @@ import sk
 import info
 import nord
 import panda
+import bg
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -106,6 +107,11 @@ def check_panda_command(message):
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
     bin.process_bin_command(bot, message)
+
+@bot.message_handler(commands=['bg'])
+def check_bg_command(message):
+    chat_id = message.chat.id
+    bg.process_bg_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
