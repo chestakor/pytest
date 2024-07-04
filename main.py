@@ -18,6 +18,7 @@ import bin
 import sk
 import info
 import nord
+import panda
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -97,6 +98,10 @@ def handle_callback_query(call):
 def check_card_command(message):
     chat_id = message.chat.id
     str1.process_chk_command(bot, message)
+
+@bot.message_handler(commands=['panda'])
+def check_panda_command(message):
+    panda.process_panda_command(bot, message)
 
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
