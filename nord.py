@@ -14,7 +14,12 @@ def date_to_unix_time(date_string, date_format="%Y-%m-%dT%H:%M:%S.%fZ"):
 def process_nord_command(bot, message):
     chat_id = message.chat.id
     try:
-        credentials = message.text.split()[1]  # Get the credentials from the command
+        command_parts = message.text.split()
+        if len(command_parts) < 2:
+            bot.send_message(chat_id, "Please provide credentials in the format: /nord email:password")
+            return
+
+        credentials = command_parts[1]  # Get the credentials from the command
         user, password = credentials.split(':')
         start_time = time.time()
 
@@ -50,12 +55,16 @@ def process_nord_command(bot, message):
                         else:
                             status = "EXPIRED"
                     else:
+                        expiration = "UNKNOWN"
                         status = "FREE"
                 else:
+                    expiration = "UNKNOWN"
                     status = "UNKNOWN"
             else:
+                expiration = "UNKNOWN"
                 status = "Unauthorized"
         else:
+            expiration = "UNKNOWN"
             status = "Login failed"
 
         elapsed_time = round(time.time() - start_time, 2)
