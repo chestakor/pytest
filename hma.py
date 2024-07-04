@@ -1,41 +1,45 @@
 import requests
+import time
 import random
 import string
 import hashlib
-import time
 
 def generate_random_string(pattern):
-    replacements = {
-        '?d': string.digits,
-        '?u': string.ascii_uppercase,
-        '?l': string.ascii_lowercase
-    }
-
-    result = []
-    for char in pattern:
-        if char in replacements:
-            result.append(random.choice(replacements[char]))
-        else:
-            result.append(char)
-    return ''.join(result)
+    return ''.join(random.choice(string.ascii_uppercase if ch == 'u' else string.digits if ch == 'd' else ch) for ch in pattern)
 
 def generate_guid():
-    return ''.join([random.choice('0123456789abcdef') for _ in range(32)])
+    return ''.join(random.choice(string.hexdigits) for _ in range(32))
 
-def sha256_hash(guid):
-    return hashlib.sha256(guid.encode()).hexdigest()
-
-def unix_time_to_date(unix_time, date_format="%Y-%m-%d"):
-    return time.strftime(date_format, time.localtime(unix_time))
+def sha256_hash(value):
+    return hashlib.sha256(value.encode()).hexdigest()
 
 def process_hma_command(bot, message):
     chat_id = message.chat.id
-    username = message.from_user.username if message.from_user.username else "Unknown"
+    command_parts = message.text.split()[1:]  # Get the list of email:password
+
+    if not command_parts:
+        bot.send_message(chat_id, "Please provide email and password in the format: /hma email:password")
+        return
+
     start_time = time.time()
-    
-    key = generate_random_string("?d?u?d?u?u?u-?u?u?u?u?u?d-?d?u?u?u?u?d")
+    results = []
+    initial_message = "↯ HMA VPN CHECK\n\n"
+    msg = bot.send_message(chat_id, initial_message + get_footer_info(len(command_parts), start_time, message.from_user.username))
+
+    for account in command_parts:
+        result = check_hma_account(account)
+        results.append(f"Combo: {account}\nResult => {result}")
+        bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=msg.message_id,
+            text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(len(command_parts), start_time, message.from_user.username)
+        )
+
+def check_hma_account(account):
+    email, password = account.split(':')
+    key = generate_random_string("?d?u?d?u?u?u-?u?u?u?u?u?d")
     guid = generate_guid()
-    device_id = sha256_hash(guid)
+    did = sha256_hash(guid)
 
     headers = {
         "Host": "my-win.avast.com",
@@ -47,7 +51,7 @@ def process_hma_command(bot, message):
         "Vaar-Header-App-Product-Brand": "PRIVAX",
         "Vaar-Header-App-Product-Edition": "HMA_VPN_CONSUMER",
         "Vaar-Header-App-Product-Mode": "PAID",
-        "Vaar-Header-Device-Id": device_id,
+        "Vaar-Header-Device-Id": did,
         "Vaar-Header-Device-Platform": "WIN",
         "Vaar-Version": "0",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -55,46 +59,36 @@ def process_hma_command(bot, message):
         "Content-Length": "39"
     }
 
-    data = {"walletKeys": [key]}
+    data = {
+        "walletKeys": [key]
+    }
 
-    response = requests.post("https://my-win.avast.com/v1/query/get-exact-application-licenses", json=data, headers=headers)
+    response = requests.post("https://my-win.avast.com/v1/query/get-exact-application-licenses", headers=headers, json=data)
     
-    if response.status_code != 200:
-        bot.send_message(chat_id, "Failed to connect to the HMA API. Please try again.")
-        return
-    
-    response_json = response.json()
-    if "Licenses [{}] do not exist".format(key) in response.text or "NONEXISTENT_IDENTIFIER" in response.text:
-        result_message = "Licenses for the provided key do not exist."
-    elif "id" in response_json and "subscriptionId" in response_json:
-        subscription = response_json.get("mode", "UNKNOWN")
-        expires_unix = int(response_json.get("expires", 0))
-        expiry_date = unix_time_to_date(expires_unix)
-        current_unix = int(time.time())
-        renewable = response_json.get("auto", "UNKNOWN")
-        device_limit = response_json.get("maximum", "UNKNOWN")
-
-        if "PAID" in subscription and expires_unix > current_unix:
-            status = "PAID"
-        elif "PAID" not in subscription:
-            status = "FREE"
+    if response.status_code == 200:
+        response_data = response.json()
+        if "mode" in response_data:
+            subscription = response_data.get("mode", "UNKNOWN")
+            expires = response_data.get("expires", "UNKNOWN")
+            renewable = response_data.get("auto", "UNKNOWN")
+            device_limit = response_data.get("maximum", "UNKNOWN")
+            return (f"Subscription: {subscription}\n"
+                    f"Expiry: {expires}\n"
+                    f"Renewable: {renewable}\n"
+                    f"Device Limit: {device_limit}")
         else:
-            status = "EXPIRED"
-
-        result_message = (
-            f"↯ HMA VPN CHECKER\n\n"
-            f"Subscription: {subscription}\n"
-            f"Expiry: {expiry_date}\n"
-            f"Renewable: {renewable}\n"
-            f"Device Limit: {device_limit}\n"
-            f"Status: {status}\n\n"
-            f"－－－－－－－－－－－－－－－－\n"
-            f"⏱️ Time Taken - {round(time.time() - start_time, 2)} seconds\n"
-            f"▫️ Checked by: {username}\n"
-            f"⚡️ Bot by - AFTAB [BOSS]\n"
-            f"－－－－－－－－－－－－－－－－"
-        )
+            return "Failed to retrieve subscription information. Please try again."
     else:
-        result_message = "Failed to retrieve subscription details."
+        return "Unauthorized or failed to fetch data. Please check your input and try again."
 
-    bot.send_message(chat_id, result_message)
+def get_footer_info(total_accounts, start_time, username):
+    elapsed_time = time.time() - start_time
+    footer = (
+        f"－－－－－－－－－－－－－－－－\n"
+        f"⌧ Total ACCOUNT Checked - {total_accounts}\n"
+        f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
+        f"⌧ Checked by: {username}\n"
+        f"⚡️ Bot by - AFTAB [BOSS]\n"
+        f"－－－－－－－－－－－－－－－－"
+    )
+    return footer
