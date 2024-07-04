@@ -17,6 +17,7 @@ import gen
 import bin
 import sk
 import info
+import nord
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -100,6 +101,11 @@ def check_card_command(message):
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
     bin.process_bin_command(bot, message)
+
+@bot.message_handler(commands=['nord'])
+def nord_command(message):
+    import nord
+    nord.process_nord_command(bot, message)
 
 @bot.message_handler(commands=['gen'])
 def generate_cc_command(message):
