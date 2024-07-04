@@ -40,15 +40,15 @@ welcome_text = (
 
 premium_text = (
     "### [GATES]\n\n"
-    "💳 STRIPE Charge - [ TEST ]\n"
+    "💳 STRIPE Charge - [ TEST🧪 ]\n"
     "- Format: /chk cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 02:54:04 14-02-2024\n\n"
-    "💳 NONSK CHECKER-1 - [ ON ]\n"
+    "💳 NONSK CHECKER-1 - [ ON✅ ]\n"
     "- Format: /nonsk1 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 12:58:42 10-02-2024\n\n"
-    "💳 NONSK CHECKER-2 - [ TEST ]\n"
+    "💳 NONSK CHECKER-2 - [ TEST🧪 ]\n"
     "- Format: /nonsk2 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 17:40:35 20-02-2024\n\n"
