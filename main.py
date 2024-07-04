@@ -12,6 +12,7 @@ import nonsk3
 from telebot import types
 import clean
 import weather
+import nubile
 import address
 import gen
 import bin
@@ -127,6 +128,10 @@ def check_card_command(message):
 @bot.message_handler(commands=['panda'])
 def check_panda_command(message):
     panda.process_panda_command(bot, message)
+
+@bot.message_handler(commands=['nubile'])
+def nubile_command(message):
+    nubile.process_nubile_command(bot, message)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
