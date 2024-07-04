@@ -5,15 +5,15 @@ from main import bot
 # Define the gate and tool texts
 gate_text = (
     "### [GATES]\n\n"
-    "💳 STRIPE Charge - [ TEST ]\n"
+    "💳 STRIPE Charge - [ TEST🧪 ]\n"
     "- Format: /chk cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 02:54:04 14-02-2024\n\n"
-    "💳 NONSK CHECKER-1 - [ TEST ]\n"
+    "💳 NONSK CHECKER-1 - [ TEST✅ ]\n"
     "- Format: /nonsk1 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 12:58:42 10-02-2024\n\n"
-    "💳 NONSK CHECKER-2 - [ TEST ]\n"
+    "💳 NONSK CHECKER-2 - [ TEST🧪 ]\n"
     "- Format: /nonsk2 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
     "- Updated: 17:40:35 20-02-2024\n\n"
@@ -51,10 +51,10 @@ tool_text = (
     "- Status: ACTIVE ✅\n\n"
     "🌐 Nord VPN\n"
     "- Format: /nord email:pass\n"
-    "- Status: ACTIVE ✅\n\n"
+    "- Status: Testing 🧪\n\n"
     "🌐 Panda VPN\n"
     "- Format: /panda email:pass\n"
-    "- Status: ACTIVE ✅\n"
+    "- Status: Testing 🧪\n"
 )
 
 def process_help_command(bot, message):
