@@ -15,29 +15,27 @@ def sha256_hash(value):
 
 def process_hma_command(bot, message):
     chat_id = message.chat.id
-    command_parts = message.text.split()[1:]  # Get the list of email:password
+    keys = message.text.split()[1:]  # Get the list of keys
 
-    if not command_parts:
-        bot.send_message(chat_id, "Please provide email and password in the format: /hma email:password")
+    if not keys:
+        bot.send_message(chat_id, "Please provide HMA keys in the format: /hma key1 key2 ...")
         return
 
     start_time = time.time()
     results = []
     initial_message = "↯ HMA VPN CHECK\n\n"
-    msg = bot.send_message(chat_id, initial_message + get_footer_info(len(command_parts), start_time, message.from_user.username))
+    msg = bot.send_message(chat_id, initial_message + get_footer_info(len(keys), start_time, message.from_user.username))
 
-    for account in command_parts:
-        result = check_hma_account(account)
-        results.append(f"Combo: {account}\nResult => {result}")
+    for key in keys:
+        result = check_hma_key(key)
+        results.append(f"Key: {key}\nResult => {result}")
         bot.edit_message_text(
             chat_id=chat_id,
             message_id=msg.message_id,
-            text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(len(command_parts), start_time, message.from_user.username)
+            text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(len(keys), start_time, message.from_user.username)
         )
 
-def check_hma_account(account):
-    email, password = account.split(':')
-    key = generate_random_string("?d?u?d?u?u?u-?u?u?u?u?u?d")
+def check_hma_key(key):
     guid = generate_guid()
     did = sha256_hash(guid)
 
@@ -81,11 +79,11 @@ def check_hma_account(account):
     else:
         return "Unauthorized or failed to fetch data. Please check your input and try again."
 
-def get_footer_info(total_accounts, start_time, username):
+def get_footer_info(total_keys, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"⌧ Total ACCOUNT Checked - {total_accounts}\n"
+        f"⌧ Total KEYS Checked - {total_keys}\n"
         f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
         f"⌧ Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB [BOSS]\n"
