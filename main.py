@@ -143,7 +143,7 @@ def bin_command(message):
     
 @bot.message_handler(commands=['sis'])
 def sis_command(message):
-sis.process_sis_command(bot, message)
+    sis.process_sis_command(bot, message)
 
 @bot.message_handler(commands=['bg'])
 def check_bg_command(message):
