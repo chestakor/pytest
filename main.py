@@ -143,10 +143,6 @@ def nagad_command(message):
 def bin_command(message):
     bin.process_bin_command(bot, message)
     
-@bot.message_handler(commands=['sis'])
-def sis_command(message):
-    sis.process_sis_command(bot, message)
-
 @bot.message_handler(commands=['bg'])
 def check_bg_command(message):
     chat_id = message.chat.id
