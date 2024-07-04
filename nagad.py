@@ -18,7 +18,7 @@ def process_nagad_command(bot, message):
 
     for number in numbers:
         result = check_nagad_number(number, translator)
-        results.append(f"Number: {number}\nResult => {result}")
+        results.append(f"Number: {number}\nResult =>\n {result}")
         bot.edit_message_text(
             chat_id=chat_id,
             message_id=msg.message_id,
