@@ -14,7 +14,7 @@ def process_bin_command(bot, message):
         for bin_input in bin_data:
             bin_number = bin_input[:6]
             result = check_bin_details(bin_number)
-            results.append(f"BIN: {bin_number}\nResult => {result}")
+            results.append(f"BIN: {bin_number}\n{result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
