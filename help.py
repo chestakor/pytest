@@ -16,7 +16,7 @@ gate_text = (
     "💳 NONSK CHECKER-2 - [ TEST ]\n"
     "- Format: /nonsk2 cc|mon|year|cvv\n"
     "- Gateway: Stripe » FREE\n"
-    "- Updated: 17:40:35 20-02-2024\n\n
+    "- Updated: 17:40:35 20-02-2024\n\n"
     "(MORE COMING SOON)"
 )
 
@@ -34,9 +34,6 @@ tool_text = (
     "🌐 Website: Zee5 Global\n"
     "- Format: /z email:pass\n"
     "- Status: Coming Soon 🌦\n\n"
-    "🌐 Website: Stripe CS PK GRABBER\n"
-    "- Format: /grab url\n"
-    "- Status: ACTIVE ✅\n\n"
     "🌐 Weather\n"
     "- Format: /weather city_name\n"
     "- Status: ACTIVE ✅\n\n"
