@@ -89,10 +89,10 @@ free_text = (
     "- Status: ACTIVE ✅\n\n"
     "🌐 Nord VPN\n"
     "- Format: /nord email:pass\n"
-    "- Status: ACTIVE ✅\n\n"
+    "- Status: Testing 🧪\n\n"
     "🌐 Panda VPN\n"
     "- Format: /panda email:pass\n"
-    "- Status: ACTIVE ✅\n"
+    "- Status: Testing 🧪\n"
 )
 
 gates_keyboard = types.InlineKeyboardMarkup(row_width=2)
