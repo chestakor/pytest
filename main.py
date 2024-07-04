@@ -26,12 +26,12 @@ bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
 welcome_text = (
     "－－－－－－－－－－－－－－－－\n"
-    "              WELCOME 💬\n"
+    "              WELCOME ⚡️\n"
     "－－－－－－－－－－－－－－－－\n"
     " • GATES ➢ 3[Test]\n"
-    " • TOOLS ➢ 4\n"
+    " • TOOLS ➢ 11\n"
     "－－－－－－－－－－－－－－－－\n"
-    " • Dev ➣ @aftab_kabir\n"
+    " • Dev ➣ @aftab_kabirr\n"
     "－－－－－－－－－－－－－－－－\n"
     "I'm Jarvis!\n"
     "Use /help to know all command\n"
