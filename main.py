@@ -22,6 +22,7 @@ import panda
 import bg
 import hma
 import nagad
+import sis
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
@@ -134,6 +135,10 @@ def nagad_command(message):
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
     bin.process_bin_command(bot, message)
+    
+@bot.message_handler(commands=['sis'])
+def sis_command(message):
+sis.process_sis_command(bot, message)
 
 @bot.message_handler(commands=['bg'])
 def check_bg_command(message):
