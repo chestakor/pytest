@@ -23,7 +23,7 @@ import panda
 import bg
 import hma
 import nagad
-import scr
+import dork
 
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
@@ -147,9 +147,9 @@ def check_bg_command(message):
     chat_id = message.chat.id
     bg.process_bg_command(bot, message)
 
-@bot.message_handler(commands=['scr'])
-def scr_command(message):
-    scr.process_scr_command(bot, message)
+@bot.message_handler(commands=['dork'])
+def handle_dork_command(message):
+    dork.process_dork_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
