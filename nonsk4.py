@@ -168,10 +168,10 @@ json_data = {
 
 response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
 
-try:
-    tok = response.json()['data']['tokenizeCreditCard']['token']
-except KeyError:
-    return f"Failed to tokenize card: {response.text}"
+    try:
+        tok = response.json()['data']['tokenizeCreditCard']['token']
+    except KeyError:
+        return f"Failed to tokenize card: {response.text}"
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
