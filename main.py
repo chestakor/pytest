@@ -24,6 +24,7 @@ import bg
 import hma
 import nagad
 import dork
+import grizzly
 
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
@@ -137,6 +138,10 @@ def nubile_command(message):
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
     nagad.process_nagad_command(bot, message)
+
+@bot.message_handler(commands=['grizzly'])
+def handle_grizzly_command(message):
+    grizzly.process_grizzly_command(bot, message)
 
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
