@@ -1,71 +1,49 @@
+from telethon import TelegramClient, events
+from telethon.sessions import StringSession
 import re
-import telethon
-from telethon import TelegramClient
-from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.tl.types import PeerChannel
+import os
+from telebot import types
 
-# Your API ID, hash, and bot token
+# Import the bot instance from main
+from main import bot
+
 api_id = '23883349'
 api_hash = '9ae2939989ed439ab91419d66b61a4a4'
 bot_token = '7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0'
+session_string = os.environ.get('SESSION_STRING', None)
 
-# Create the Telegram client
-client = TelegramClient('anon', api_id, api_hash)
+client = TelegramClient(StringSession(session_string), api_id, api_hash).start(bot_token=bot_token)
 
-# Define a regex pattern to match credit card numbers
-cc_pattern = re.compile(r'\b\d{4}[ ]?\d{4}[ ]?\d{4}[ ]?\d{4}\|[0-9]{2}\|[0-9]{2,4}\|[0-9]{3}\b')
-
-async def scrape_cc(group_link, limit):
-    await client.start(bot_token=bot_token)
-
-    # Get the group entity
-    group = await client.get_entity(group_link)
-    
-    # Get messages
-    result = await client(GetHistoryRequest(
-        peer=PeerChannel(group.id),
-        limit=limit,
-        offset_date=None,
-        offset_id=0,
-        max_id=0,
-        min_id=0,
-        add_offset=0,
-        hash=0
-    ))
-
-    # Extract credit card information
-    ccs = []
-    for message in result.messages:
-        matches = cc_pattern.findall(message.message)
-        ccs.extend(matches)
-    
-    return ccs
+async def scrape_cc(channel, limit):
+    cc_pattern = re.compile(r'\b\d{13,19}\|\d{2}\|\d{2,4}\|\d{3,4}\b')
+    async for message in client.iter_messages(channel, limit=int(limit)):
+        match = cc_pattern.search(message.text)
+        if match:
+            yield match.group()
 
 def process_scr_command(bot, message):
     chat_id = message.chat.id
-    try:
-        _, group_link, limit = message.text.split()
-        limit = int(limit)
-    except ValueError:
-        bot.send_message(chat_id, "Please provide the command in the format: /scr group_link limit")
+    command = message.text.split()
+    if len(command) != 3:
+        bot.send_message(chat_id, "Please provide the correct format: /scr channel_link number_of_messages")
         return
-
-    # Scrape the credit cards
-    ccs = client.loop.run_until_complete(scrape_cc(group_link, limit))
-
-    if ccs:
-        # Write the scraped credit cards to a file
-        file_path = "/mnt/data/scraped_ccs.txt"
-        with open(file_path, "w") as f:
-            for cc in ccs:
-                f.write(f"{cc}\n")
+    
+    channel = command[1]
+    limit = command[2]
+    
+    try:
+        ccs = list(client.loop.run_until_complete(scrape_cc(channel, limit)))
+        if not ccs:
+            bot.send_message(chat_id, "No CCs found.")
+            return
         
-        # Send the file to the user
-        bot.send_document(chat_id, document=open(file_path, "rb"), caption=f"Scraped {len(ccs)} credit cards from {group_link}")
-    else:
-        bot.send_message(chat_id, "No credit cards found in the specified range of messages.")
-
-# The part to be added to your main.py
-@bot.message_handler(commands=['scr'])
-def scr_command(message):
-    scraper.process_scr_command(bot, message)
+        filename = f"{limit} x {channel.split('/')[-1]}.txt"
+        with open(filename, 'w') as file:
+            file.write("\n".join(ccs))
+        
+        with open(filename, 'rb') as file:
+            bot.send_document(chat_id, file, caption=f"Target ➔ {channel.split('/')[-1]}\nAmount ➔ {limit}\nFound ➔ {len(ccs)}\nScraped By ➔ {message.from_user.username} [Free]")
+        
+        os.remove(filename)
+    except Exception as e:
+        bot.send_message(chat_id, f"An error occurred: {str(e)}")
