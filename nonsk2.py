@@ -4,7 +4,7 @@ import json
 import uuid
 import random
 import string
-
+import urllib3
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
@@ -36,6 +36,7 @@ def check_nonsk2_card(cc):
 
     session = requests.Session()
     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     headers = {
         "User-Agent": user_agent,
@@ -71,7 +72,7 @@ def check_nonsk2_card(cc):
     payment_method_id = response_data.get('id')
 
     if not payment_method_id:
-        return "Failed to create payment method❌"
+        return f"Failed to create payment method❌: {response_data.get('error', {}).get('message', 'Unknown error')}"
 
     # Step 3: Get Payment Intent
     payment_intent_data = {
@@ -89,7 +90,7 @@ def check_nonsk2_card(cc):
     client_secret = response_data.get('clientSecret')
 
     if not payment_intent_id or not client_secret:
-        return "Failed to get payment intent❌"
+        return f"Failed to get payment intent❌: {response_data.get('error', {}).get('message', 'Unknown error')}"
 
     # Step 4: Confirm Payment Intent
     confirm_payment_data = {
@@ -106,18 +107,18 @@ def check_nonsk2_card(cc):
 
     if "succeeded" in response_data.get("status", ""):
         return "30$✅ CCN"
-    elif response_data.get("error", {}).get("decline_code") == "incorrect_cvc":
+    elif "incorrect_cvc" in response_data.get("error", {}).get("decline_code", ""):
         return "CCN"
-    elif response_data.get("error", {}).get("decline_code") == "insufficient_funds":
+    elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
         return "NSF"
-    elif response_data.get("error", {}).get("decline_code") == "stolen_card":
+    elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
         return "STOLEN"
-    elif response_data.get("error", {}).get("decline_code") == "three_d_secure_redirect":
+    elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
         return "3DSECURE"
-    elif response_data.get("error", {}).get("decline_code") == "rate_limit":
+    elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
         return "RATE LIMIT"
     else:
-        error_message = response_data.get("error", {}).get("message", "Declined")
+        error_message = response_data.get('error', {}).get('message', 'Unknown error')
         return f"Declined: {error_message}"
 
 def random_string():
