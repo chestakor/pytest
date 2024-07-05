@@ -132,23 +132,26 @@ def check_nonsk3(cc_data):
     confirm_order_response = session.post(checkout_confirm_url, headers=headers, data=checkout_confirm_data)
 
     # Step 6: Parse response
-    status = get_str(confirm_order_response.text, '"result":"', '"')
-    msg = get_str(confirm_order_response.text, '\\"alert\\">\\n\\t\\t\\t<li>\\n\\t\\t\\t', '\\t\\t<\\/li>\\n\\t<\\/ul>')
+status = get_str(confirm_order_response.text, '"result":"', '"')
+msg = get_str(confirm_order_response.text, '\\"alert\\">\\n\\t\\t\\t<li>\\n\\t\\t\\t', '\\t\\t<\\/li>\\n\\t<\\/ul>')
 
-    if status == "success":
-        return "Charged Successfully 💳✅"
-    elif status == "failure":
-        if msg:
-            if "Your card's security code is incorrect" in msg:
-                return "CCN ❌"
-            elif "Your card has insufficient funds." in msg:
-                return "NSF ❌"
-            else:
-                return f"Failed: {msg}"
+# Add logging to see the full response
+print("Full response:", confirm_order_response.text)  # Log the full response for debugging
+
+if status == "success":
+    return "Charged Successfully 💳✅"
+elif status == "failure":
+    if msg:
+        if "Your card's security code is incorrect" in msg:
+            return "CCN ❌"
+        elif "Your card has insufficient funds." in msg:
+            return "NSF ❌"
         else:
-            return "Failed: Unknown error"
+            return f"Failed: {msg}"
     else:
-        return "Unknown error ❌"
+        return f"Failed: {confirm_order_response.text}"  # Return full response if msg is None
+else:
+    return f"Unknown error ❌: {confirm_order_response.text}"  # Return full response if status is unknown
 
 def handle_nonsk3_command(bot, message):
     chat_id = message.chat.id
