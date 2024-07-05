@@ -148,7 +148,7 @@ def check_bg_command(message):
     bg.process_bg_command(bot, message)
 
 @bot.message_handler(commands=['scr'])
-def handle_scr_command(message):
+def scr_command(message):
     scraper.process_scr_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
