@@ -285,9 +285,9 @@ def handle_help_callback(call):
         tool_keyboard.add(types.InlineKeyboardButton('TOOLS 🥁', callback_data='show_tools'))
         bot.edit_message_text(gate_text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=tool_keyboard)
 
-@bot.message_handler(commands=['nsk3'])
-def handle_nsk3(message):
-    nonsk3.handle_nonsk3_command(bot, message)
+@bot.message_handler(commands=['nonsk3'])
+def handle_nonsk3_command(message):
+    nonsk3.process_nonsk3_command(bot, message)
 
 @bot.message_handler(commands=['clean'])
 def clean_command(message):
