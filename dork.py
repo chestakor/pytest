@@ -31,7 +31,7 @@ def search_google_dork(query):
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
-        urls = [link.get('href') for link in links if link.get('href').startswith('http')]
+        urls = [link.get('href') for link in links if link.get('href') and link.get('href').startswith('http')]
         return urls
     else:
         return []
