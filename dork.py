@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import random
 import time
 
 def process_dork_command(bot, message):
@@ -22,8 +23,16 @@ def process_dork_command(bot, message):
         bot.send_message(chat_id, "No results found for the given dork query.")
 
 def search_google_dork(query):
+    user_agents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/18.18363",
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
+    ]
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": random.choice(user_agents)
     }
     search_url = f"https://www.google.com/search?q={query}"
     response = requests.get(search_url, headers=headers)
@@ -32,7 +41,8 @@ def search_google_dork(query):
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
         urls = [link.get('href') for link in links if link.get('href') and link.get('href').startswith('http')]
-        return urls
+        filtered_urls = [url for url in urls if not url.startswith('https://www.google.') and not url.startswith('https://support.google.com')]
+        return filtered_urls[:20]  # Return the first 20 results
     else:
         return []
 
