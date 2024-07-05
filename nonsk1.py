@@ -112,6 +112,8 @@ def check_card_details(card):
             return "INSUFFICIENT FUNDS❎"
         elif "security code is incorrect" in result_2:
             return "CCN LIVE❎"
+        elif "Your card's security code is invalid." in result_2:
+            return "CCN LIVE❎"
         elif "transaction_not_allowed" in result_2:
             return "CVV LIVE❎"
         elif "stripe_3ds2_fingerprint" in result_2:
