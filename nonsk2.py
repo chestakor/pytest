@@ -57,7 +57,7 @@ def check_nonsk2_card(cc):
         "card[number]": cc_number,
         "card[exp_month]": exp_month,
         "card[exp_year]": exp_year,
-        "card[cvc]": cvc,
+        "card[cvc]": cvv,
         "guid": generate_guid(),
         "muid": generate_guid(),
         "sid": generate_guid(),
