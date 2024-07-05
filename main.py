@@ -151,10 +151,6 @@ def check_bg_command(message):
 def handle_scr_command(message):
     scraper.process_scr_command(bot, message)
 
-@bot.message_handler(commands=['scr'])
- def scr_command(message):
-     scr.process_scr_command(bot, message)
-
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
     nord.process_nord_command(bot, message)
