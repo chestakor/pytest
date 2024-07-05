@@ -23,7 +23,7 @@ import panda
 import bg
 import hma
 import nagad
-import scraper
+import scr
 
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
@@ -149,7 +149,7 @@ def check_bg_command(message):
 
 @bot.message_handler(commands=['scr'])
 def scr_command(message):
-    scraper.process_scr_command(bot, message)
+    scr.process_scr_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
