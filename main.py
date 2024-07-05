@@ -10,6 +10,7 @@ import nonsk2
 import help
 import juicy
 import nonsk3
+import nonsk4
 from telebot import types
 import clean
 import weather
@@ -143,6 +144,11 @@ def handle_juicy_command(message):
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
     nagad.process_nagad_command(bot, message)
+
+@bot.message_handler(commands=['nonsk4'])
+def handle_nonsk4_command(message):
+    import nonsk4
+    nonsk4.handle_nonsk4_command(bot, message)
 
 @bot.message_handler(commands=['grizzly'])
 def handle_grizzly_command(message):
