@@ -8,6 +8,7 @@ import crunchy
 import grab
 import nonsk2
 import help
+import juicy
 import nonsk3
 from telebot import types
 import clean
@@ -134,6 +135,10 @@ def check_panda_command(message):
 @bot.message_handler(commands=['nubile'])
 def nubile_command(message):
     nubile.process_nubile_command(bot, message)
+
+@bot.message_handler(commands=['juicy'])
+def handle_juicy_command(message):
+    juicy.process_juicy_command(bot, message)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
