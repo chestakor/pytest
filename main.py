@@ -293,8 +293,8 @@ def handle_help_callback(call):
 
 @bot.message_handler(commands=['nonsk3'])
 def handle_nonsk3_command(message):
-    nonsk3.process_nonsk3_command(bot, message)
-
+    nonsk3.handle_nonsk3_command(bot, message)
+    
 @bot.message_handler(commands=['clean'])
 def clean_command(message):
     clean.process_clean_command(bot, message)
