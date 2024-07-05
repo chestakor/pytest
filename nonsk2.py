@@ -1,6 +1,10 @@
 import requests
 import time
 import json
+import uuid
+import random
+import string
+
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
@@ -102,26 +106,24 @@ def check_nonsk2_card(cc):
 
     if "succeeded" in response_data.get("status", ""):
         return "30$✅ CCN"
-    elif "incorrect_cvc" in response_data.get("error", {}).get("decline_code", ""):
+    elif response_data.get("error", {}).get("decline_code") == "incorrect_cvc":
         return "CCN"
-    elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
+    elif response_data.get("error", {}).get("decline_code") == "insufficient_funds":
         return "NSF"
-    elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
+    elif response_data.get("error", {}).get("decline_code") == "stolen_card":
         return "STOLEN"
-    elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
+    elif response_data.get("error", {}).get("decline_code") == "three_d_secure_redirect":
         return "3DSECURE"
-    elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
+    elif response_data.get("error", {}).get("decline_code") == "rate_limit":
         return "RATE LIMIT"
     else:
-        return "Declined"
+        error_message = response_data.get("error", {}).get("message", "Declined")
+        return f"Declined: {error_message}"
 
 def random_string():
-    import random
-    import string
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
 
 def generate_guid():
-    import uuid
     return str(uuid.uuid4())
 
 def get_footer_info(total_cards, start_time, username):
