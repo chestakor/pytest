@@ -30,6 +30,23 @@ def handle_docs(bot, message):
         total_cards = len(cc_list)
         start_time = time.time()
 
+        initial_message = (
+            f"↯ NONSK2 CHECKER\n\n"
+            f"CARD CHECKING:\n"
+            f"• Approved ✅: [0] •\n"
+            f"• Declined ❌: [0] •\n"
+            f"• RISK 📝: [0] •\n"
+            f"• TOTAL: [{total_cards}] •\n"
+            f"－－－－－－－－－－－－－－－－\n"
+            f"⚫️ Total CC - {total_cards}\n"
+            f"⏱️ Time Taken - 0.00 seconds\n"
+            f"▫️ Checked by: {message.from_user.username}\n"
+            f"⚡️ Bot by - AFTAB 👑\n"
+            f"－－－－－－－－－－－－－－－－"
+        )
+
+        msg = bot.send_message(message.chat.id, initial_message)
+
         for cc in cc_list:
             result = check_nonsk2_card(cc.strip())
             if "Approved" in result:
@@ -39,12 +56,21 @@ def handle_docs(bot, message):
             elif "RISK" in result:
                 risk.append((cc.strip(), result))
 
-            bot.send_message(message.chat.id, f"Checking your card... ⏳💵\n• {cc.strip()} •")
-
-        bot.send_message(
-            message.chat.id,
-            f"↯ NONSK2 CHECKER\n\n• Approved ✅: [{len(approved)}] •\n• Declined ❌: [{len(declined)}] •\n• RISK 📝: [{len(risk)}] •\n• TOTAL: [{total_cards}] •"
-        )
+            current_message = (
+                f"↯ NONSK2 CHECKER\n\n"
+                f"CARD CHECKING:\n{cc.strip()}\n\n"
+                f"• Approved ✅: [{len(approved)}] •\n"
+                f"• Declined ❌: [{len(declined)}] •\n"
+                f"• RISK 📝: [{len(risk)}] •\n"
+                f"• TOTAL: [{total_cards}] •\n"
+                f"－－－－－－－－－－－－－－－－\n"
+                f"⚫️ Total CC - {total_cards}\n"
+                f"⏱️ Time Taken - {time.time() - start_time:.2f} seconds\n"
+                f"▫️ Checked by: {message.from_user.username}\n"
+                f"⚡️ Bot by - AFTAB 👑\n"
+                f"－－－－－－－－－－－－－－－－"
+            )
+            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id)
 
         # Creating inline keyboard for showing results
         keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -175,10 +201,10 @@ def get_footer_info(total_cards, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"⌧ Total CARD Checked - {total_cards}\n"
-        f"⌧ Time Taken - {elapsed_time:.2f} seconds\n"
-        f"⌧ Checked by: {username}\n"
-        f"⚡️ Bot by - AFTAB [BOSS]\n"
+        f"⚫️ Total CC - {total_cards}\n"
+        f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
+        f"▫️ Checked by: {username}\n"
+        f"⚡️ Bot by - AFTAB 👑\n"
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
