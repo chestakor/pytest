@@ -147,17 +147,15 @@ def handle_juicy_command(message):
 def handle_hoitxt_command(message):
     hoitxt.process_hoitxt_command(bot, message)
 
-# Handler for document upload specific to hoitxt
+# Handler for document upload
 @bot.message_handler(content_types=['document'])
 def handle_docs(message):
-    if message.caption and message.caption.lower() == 'hoitxt':
-        hoitxt.handle_docs(bot, message)
+    hoitxt.handle_docs(bot, message)
 
-# Handler for callback queries specific to hoitxt
+# Handler for callback queries
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
-    if 'hoitxt' in call.data:
-        hoitxt.handle_callback_query(call, bot)
+    hoitxt.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['crunchytxt'])
 def handle_crunchytxt_command(message):
@@ -166,14 +164,12 @@ def handle_crunchytxt_command(message):
 # Handler for document upload specific to crunchytxt
 @bot.message_handler(content_types=['document'])
 def handle_docs(message):
-    if message.caption and message.caption.lower() == 'crunchytxt':
-        crunchytxt.handle_docs(bot, message)
+    crunchytxt.handle_docs(bot, message)
 
 # Handler for callback queries specific to crunchytxt
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
-    if 'crunchytxt' in call.data:
-        crunchytxt.handle_callback_query(call, bot)
+    crunchytxt.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
