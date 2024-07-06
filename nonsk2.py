@@ -177,20 +177,19 @@ def check_nonsk2_card(cc):
     response_data = response.json()
 
     if "succeeded" in response_data.get("status", ""):
-    return "30$✅ CCN"
-elif "incorrect_cvc" in response_data.get("error", {}).get("decline_code", ""):
-    return "CCN"
-elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
-    return "NSF"
-elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
-    return "STOLEN"
-elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
-    return "3DSECURE"
-elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
-    return "RATE LIMIT"
-else:
-    error_message = response_data.get("error", {}).get("message", "Unknown error")
-    return f"Declined: {error_message}"
+        return "30$✅ CCN"
+    elif "incorrect_cvc" in response_data.get("error", {}).get("decline_code", ""):
+        return "CCN"
+    elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
+        return "NSF"
+    elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
+        return "STOLEN"
+    elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
+        return "3DSECURE"
+    elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
+        return "RATE LIMIT"
+    else:
+        return "Declined"
 
 def random_string():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
