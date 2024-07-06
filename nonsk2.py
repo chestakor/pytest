@@ -30,6 +30,14 @@ def handle_docs(bot, message):
         total_cards = len(cc_list)
         start_time = time.time()
 
+        # Creating inline keyboard for showing results
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        keyboard.add(
+            types.InlineKeyboardButton(text="Approved ✅", callback_data='approved'),
+            types.InlineKeyboardButton(text="Declined ❌", callback_data='declined'),
+            types.InlineKeyboardButton(text="RISK 📝", callback_data='risk')
+        )
+
         initial_message = (
             f"↯ NONSK2 CHECKER\n\n"
             f"CARD CHECKING:\n"
@@ -45,7 +53,7 @@ def handle_docs(bot, message):
             f"－－－－－－－－－－－－－－－－"
         )
 
-        msg = bot.send_message(message.chat.id, initial_message)
+        msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
         for cc in cc_list:
             result = check_nonsk2_card(cc.strip())
@@ -70,17 +78,7 @@ def handle_docs(bot, message):
                 f"⚡️ Bot by - AFTAB 👑\n"
                 f"－－－－－－－－－－－－－－－－"
             )
-            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, parse_mode='HTML')
-
-        # Creating inline keyboard for showing results
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        keyboard.add(
-            types.InlineKeyboardButton(text="Approved ✅", callback_data='approved'),
-            types.InlineKeyboardButton(text="Declined ❌", callback_data='declined'),
-            types.InlineKeyboardButton(text="RISK 📝", callback_data='risk')
-        )
-
-        bot.send_message(message.chat.id, "Choose an option:", reply_markup=keyboard)
+            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
 
     except Exception as e:
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
