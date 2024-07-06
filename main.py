@@ -149,21 +149,21 @@ def handle_hoitxt_command(message):
 
 @bot.message_handler(commands=['crunchytxt'])
 def handle_crunchytxt_command(message):
-    crunchy.process_crunchytxt_command(bot, message)
+    crunchytxt.process_crunchytxt_command(bot, message)
 
 @bot.message_handler(content_types=['document'])
 def handle_docs(message):
     if message.caption == '/hoitxt':
         hoitxt.handle_docs(bot, message)
     elif message.caption == '/crunchytxt':
-        crunchy.handle_docs(bot, message)
+        crunchytxt.handle_docs(bot, message)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
     if 'hoitxt' in call.data:
         hoitxt.handle_callback_query(call, bot)
     elif 'crunchytxt' in call.data:
-        crunchy.handle_callback_query(call, bot)
+        crunchytxt.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
