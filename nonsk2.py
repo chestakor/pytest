@@ -70,7 +70,7 @@ def handle_docs(bot, message):
                 f"⚡️ Bot by - AFTAB 👑\n"
                 f"－－－－－－－－－－－－－－－－"
             )
-            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id)
+            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, parse_mode='HTML')
 
         # Creating inline keyboard for showing results
         keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -182,14 +182,15 @@ def check_nonsk2_card(cc):
         return "CCN"
     elif "insufficient_funds" in response_data.get("error", {}).get("decline_code", ""):
         return "NSF"
-    elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
+        elif "stolen_card" in response_data.get("error", {}).get("decline_code", ""):
         return "STOLEN"
     elif "three_d_secure_redirect" in response_data.get("error", {}).get("decline_code", ""):
         return "3DSECURE"
     elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
         return "RATE LIMIT"
     else:
-        return "Declined"
+        error_message = response_data.get("error", {}).get("message", "Unknown error")
+        return f"Declined: {error_message}"
 
 def random_string():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
