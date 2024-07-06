@@ -10,11 +10,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 hits = []
 dead = []
+cancel_check = False
 
 def process_hoitxt_command(bot, message):
     bot.send_message(message.chat.id, "Please send your txt file with combo data.")
 
 def handle_docs(bot, message):
+    global cancel_check
+    cancel_check = False
     try:
         file_info = bot.get_file(message.document.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
@@ -28,11 +31,12 @@ def handle_docs(bot, message):
         total_combos = len(combo_list)
         start_time = time.time()
 
-        # Creating inline keyboard for showing results
+        # Creating inline keyboard for showing results and cancel button
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
             types.InlineKeyboardButton(text="HIT ✅", callback_data='hit'),
-            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead')
+            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead'),
+            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel')
         )
 
         initial_message = (
@@ -51,10 +55,12 @@ def handle_docs(bot, message):
 
         msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
-        hits.clear()
-        dead.clear()
+        hits = []
+        dead = []
 
         for combo in combo_list:
+            if cancel_check:
+                break
             if ':' in combo:
                 user, pwd = combo.strip().split(':', 1)
                 result = check_hoitxt_combo(user, pwd)
@@ -76,6 +82,8 @@ def handle_docs(bot, message):
                     f"⚡️ Bot by - AFTAB 👑\n"
                     f"－－－－－－－－－－－－－－－－"
                 )
+                # Adding a unique timestamp to ensure the message content is always different
+                current_message += f"\nLast checked at: {time.time()}"
                 bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
             else:
                 dead.append((combo.strip(), "Invalid format"))
@@ -86,10 +94,14 @@ def handle_docs(bot, message):
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
 
 def handle_callback_query(call, bot):
+    global cancel_check
     if call.data == 'hit':
         send_combos(call.message.chat.id, hits, bot, "HIT ✅ Combos")
     elif call.data == 'dead':
         send_combos(call.message.chat.id, dead, bot, "Dead ❌ Combos")
+    elif call.data == 'cancel':
+        cancel_check = True
+        bot.send_message(call.message.chat.id, "Process has been canceled.")
 
 def send_combos(chat_id, combos, bot, title):
     if combos:
