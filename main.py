@@ -9,6 +9,7 @@ import grab
 import nonsk2
 import help
 import juicy
+import crunchytxt
 import nonsk3
 import nonsk4
 from telebot import types
@@ -146,15 +147,23 @@ def handle_juicy_command(message):
 def handle_hoitxt_command(message):
     hoitxt.process_hoitxt_command(bot, message)
 
-# Handler for document upload
+@bot.message_handler(commands=['crunchytxt'])
+def handle_crunchytxt_command(message):
+    crunchy.process_crunchytxt_command(bot, message)
+
 @bot.message_handler(content_types=['document'])
 def handle_docs(message):
-    hoitxt.handle_docs(bot, message)
+    if message.caption == '/hoitxt':
+        hoitxt.handle_docs(bot, message)
+    elif message.caption == '/crunchytxt':
+        crunchy.handle_docs(bot, message)
 
-# Handler for callback queries
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call):
-    hoitxt.handle_callback_query(call, bot)
+    if 'hoitxt' in call.data:
+        hoitxt.handle_callback_query(call, bot)
+    elif 'crunchytxt' in call.data:
+        crunchy.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
