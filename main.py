@@ -19,6 +19,7 @@ import address
 import gen
 import bin
 import sk
+import hoitxt
 import info
 import nord
 import panda
@@ -140,6 +141,20 @@ def nubile_command(message):
 @bot.message_handler(commands=['juicy'])
 def handle_juicy_command(message):
     juicy.process_juicy_command(bot, message)
+
+@bot.message_handler(commands=['hoitxt'])
+def handle_hoitxt_command(message):
+    hoitxt.process_hoitxt_command(bot, message)
+
+# Handler for document upload
+@bot.message_handler(content_types=['document'])
+def handle_docs(message):
+    hoitxt.handle_docs(bot, message)
+
+# Handler for callback queries
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback_query(call):
+    hoitxt.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
