@@ -218,9 +218,18 @@ def grab_command(message):
     grab.process_grab_command(bot, message)
 
 @bot.message_handler(commands=['nonsk2'])
-def check_nonsk2_command(message):
-    chat_id = message.chat.id
+def handle_nonsk2_command(message):
     nonsk2.process_nonsk2_command(bot, message)
+
+# Handler for document upload
+@bot.message_handler(content_types=['document'])
+def handle_docs(message):
+    nonsk2.handle_docs(bot, message)
+
+# Handler for callback queries
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback_query(call):
+    nonsk2.handle_callback_query(call, bot)
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
