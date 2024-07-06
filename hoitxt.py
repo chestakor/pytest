@@ -51,8 +51,8 @@ def handle_docs(bot, message):
 
         msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
-        hits = []
-        dead = []
+        hits.clear()
+        dead.clear()
 
         for combo in combo_list:
             if ':' in combo:
