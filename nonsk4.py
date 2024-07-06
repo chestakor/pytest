@@ -212,7 +212,7 @@ def check_nonsk4(ccx):
             result = "RISK: Retry this BIN later."
     else:
         if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
-            result = "1000: Approved"
+            result = "1000: Approved✅"
         else:
             result = "Error"
 
@@ -241,7 +241,7 @@ def handle_nonsk4_command(bot, message):
             )
 
     else:
-        bot.send_message(chat_id, "Please provide account details in the format: /nsk3 card_number|exp_month|exp_year|cvv")
+        bot.send_message(chat_id, "Please provide account details in the format: /nonsk3 card_number|exp_month|exp_year|cvv")
 
 def get_footer_info(total_accounts, start_time, username):
     elapsed_time = time.time() - start_time
@@ -250,7 +250,7 @@ def get_footer_info(total_accounts, start_time, username):
         f"🔹 Total Cards Checked - {total_accounts}\n"
         f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
         f"▫️ Checked by: {username}\n"
-        f"⚡️ Bot by - AFTAB [BOSS]\n"
+        f"⚡️ Bot by - AFTAB 👑\n"
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
