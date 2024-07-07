@@ -1,7 +1,10 @@
+# hoitxt.py
+
 import requests
 import time
 from telebot import types
 
+# Global variables for storing results
 hit_combos = []
 dead_combos = []
 
@@ -152,7 +155,3 @@ def handle_callback_query(bot, call):
         bot.send_message(call.message.chat.id, dead_message)
     elif call.data == "hoitxt_cancel":
         bot.send_message(call.message.chat.id, "Process stopped.")
-
-# Add these handlers to your bot
-bot.register_message_handler(process_hoitxt_command, commands=['hoitxt'])
-bot.register_callback_query_handler(handle_callback_query)
