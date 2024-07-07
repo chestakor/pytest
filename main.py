@@ -19,8 +19,8 @@ import address
 import gen
 import bin
 import sk
-from hoitxt import process_hoitxt_command, handle_hoitxt_docs, handle_hoitxt_callback_query
-from crunchytxt import process_crunchytxt_command, handle_crunchytxt_docs, handle_crunchytxt_callback_query
+from hoitxt import process_hoitxt_command, handle_callback_query
+#from crunchytxt import process_crunchytxt_command, handle_crunchytxt_docs, handle_crunchytxt_callback_query
 import info
 import nord
 import panda
@@ -143,43 +143,17 @@ def nubile_command(message):
 def handle_juicy_command(message):
     juicy.process_juicy_command(bot, message)
 
-current_command = None
+#current_command = None
 
 # Handler for /hoitxt command
 @bot.message_handler(commands=['hoitxt'])
-def handle_hoitxt_command(message):
-    global current_command
-    current_command = 'hoitxt'
+def hoitxt_command(message):
     process_hoitxt_command(bot, message)
 
-# Handler for /crunchytxt command
-@bot.message_handler(commands=['crunchytxt'])
-def handle_crunchytxt_command(message):
-    global current_command
-    current_command = 'crunchytxt'
-    process_crunchytxt_command(bot, message)
-
-# Handler for document upload
-@bot.message_handler(content_types=['document'])
-def handle_docs(message):
-    global current_command
-    if current_command == 'hoitxt':
-        handle_hoitxt_docs(bot, message)
-    elif current_command == 'crunchytxt':
-        handle_crunchytxt_docs(bot, message)
-    else:
-        bot.send_message(message.chat.id, "Please specify the command (/hoitxt or /crunchytxt) first.")
-
-# Handler for callback queries for both commands
+# Add callback query handler for inline buttons
 @bot.callback_query_handler(func=lambda call: True)
-def handle_callback_query(call):
-    global current_command
-    if current_command == 'hoitxt':
-        handle_hoitxt_callback_query(call, bot)
-    elif current_command == 'crunchytxt':
-        handle_crunchytxt_callback_query(call, bot)
-    else:
-        bot.send_message(call.message.chat.id, "Unrecognized callback query.")
+def callback_query(call):
+    handle_callback_query(bot, call)
 
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
