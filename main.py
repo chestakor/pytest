@@ -19,7 +19,7 @@ import address
 import gen
 import bin
 import sk
-from hoitxt import process_hoitxt_command, handle_callback_query
+import hoitxt
 #from crunchytxt import process_crunchytxt_command, handle_crunchytxt_docs, handle_crunchytxt_callback_query
 import info
 import nord
@@ -148,13 +148,13 @@ def handle_juicy_command(message):
 # Handler for /hoitxt command
 @bot.message_handler(commands=['hoitxt'])
 def hoitxt_command(message):
-    process_hoitxt_command(bot, message)
+    hoitxt.process_hoitxt_command(bot, message)  # Use hoitxt. prefix
 
 # Add callback query handler for inline buttons
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    handle_callback_query(bot, call)
-
+    hoitxt.handle_callback_query(bot, call)
+    
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
     nagad.process_nagad_command(bot, message)
