@@ -6,7 +6,7 @@ import nonsk1  # Example for /nonsk1 command
 import hoi  # Example for /hoi command
 import crunchy
 import grab
-import nonsk2
+#import nonsk2
 import help
 import juicy
 import nonsk3
