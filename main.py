@@ -33,10 +33,10 @@ import grizzly
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
-owner_id = 5429071679
+owner_ids = [5429071679, 7118995866]
 
 def is_owner(message):
-    if message.from_user.id != owner_id:
+    if message.from_user.id not in owner_ids:
         bot.send_message(
             message.chat.id,
             "Hello bro!\nI am jarvis, Contact @aftab_kabirr to use the bot\n\nDeveloper: Aftab👑"
