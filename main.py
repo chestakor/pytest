@@ -33,6 +33,17 @@ import grizzly
 
 bot = telebot.TeleBot('7237381740:AAGoGZZKQjYUkHBJWd56Xb0fAxJExylP5f0')
 
+owner_id = 5429071679
+
+def is_owner(message):
+    if message.from_user.id != owner_id:
+        bot.send_message(
+            message.chat.id,
+            "Hello bro!\nI am jarvis, Contact @aftab_kabirr to use the bot\n\nDeveloper: Aftab👑"
+        )
+        return False
+    return True
+
 welcome_text = (
     "－－－－－－－－－－－－－－－－\n"
     "              WELCOME ⚡️\n"
@@ -113,6 +124,8 @@ gates_keyboard.add(
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    if not is_owner(message):
+        return
     chat_id = message.chat.id
     video_url = "https://link.anshbotzone.tech/349273/ezgif.com-gif-to-mp4-converter.mp4?hash=50dd83"
     bot.send_video(chat_id, video_url, caption=welcome_text, parse_mode='HTML', reply_markup=gates_keyboard)
@@ -128,19 +141,26 @@ def handle_callback_query(call):
         
 @bot.message_handler(commands=['chk'])
 def check_card_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     str1.process_chk_command(bot, message)
 
 @bot.message_handler(commands=['panda'])
 def check_panda_command(message):
+    if not is_owner(message):
+        return
     panda.process_panda_command(bot, message)
 
 @bot.message_handler(commands=['nubile'])
 def nubile_command(message):
+    if not is_owner(message):
+        return
     nubile.process_nubile_command(bot, message)
 
 @bot.message_handler(commands=['juicy'])
 def handle_juicy_command(message):
+    if not is_owner(message):
+        return
     juicy.process_juicy_command(bot, message)
 
 #current_command = None
@@ -157,78 +177,104 @@ def handle_juicy_command(message):
     
 @bot.message_handler(commands=['nagad'])
 def nagad_command(message):
+    if not is_owner(message):
+        return
     nagad.process_nagad_command(bot, message)
 
 @bot.message_handler(commands=['nonsk4'])
 def handle_nonsk4_command(message):
-    import nonsk4
+    if not is_owner(message):
+        return
     nonsk4.handle_nonsk4_command(bot, message)
 
 @bot.message_handler(commands=['grizzly'])
 def handle_grizzly_command(message):
+    if not is_owner(message):
+        return
     grizzly.process_grizzly_command(bot, message)
 
 @bot.message_handler(commands=['bin'])
 def bin_command(message):
+    if not is_owner(message):
+        return
     bin.process_bin_command(bot, message)
-    
+
 @bot.message_handler(commands=['bg'])
 def check_bg_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     bg.process_bg_command(bot, message)
 
 @bot.message_handler(commands=['dork'])
 def handle_dork_command(message):
+    if not is_owner(message):
+        return
     dork.process_dork_command(bot, message)
 
 @bot.message_handler(commands=['nord'])
 def nord_command(message):
+    if not is_owner(message):
+        return
     nord.process_nord_command(bot, message)
 
 @bot.message_handler(commands=['gen'])
 def generate_cc_command(message):
+    if not is_owner(message):
+        return
     gen.process_gen_command(bot, message)
 
 @bot.message_handler(commands=['sk'])
 def handle_sk(message):
+    if not is_owner(message):
+        return
     sk.process_sk_command(bot, message)
 
 @bot.message_handler(commands=['info'])
 def handle_info(message):
+    if not is_owner(message):
+        return
     info.process_info_command(bot, message)
 
 @bot.message_handler(commands=['address'])
 def address_command(message):
+    if not is_owner(message):
+        return
     address.process_address_command(bot, message)
 
 @bot.message_handler(commands=['weather'])
 def check_weather_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     weather.process_weather_command(bot, message)
 
 @bot.message_handler(commands=['seedr'])
 def check_seedr_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     seedr.process_seedr_command(bot, message)
 
 @bot.message_handler(commands=['nonsk1'])
 def check_nonsk1_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     nonsk1.process_nonsk1_command(bot, message)
 
 @bot.message_handler(commands=['hoi'])
 def check_hoi_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     hoi.process_hoi_command(bot, message)
 
 @bot.message_handler(commands=['crunchy'])
 def check_crunchy_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     crunchy.process_crunchy_command(bot, message)
 
 @bot.message_handler(commands=['grab'])
 def grab_command(message):
-    chat_id = message.chat.id
+    if not is_owner(message):
+        return
     grab.process_grab_command(bot, message)
 
 #@bot.message_handler(commands=['nonsk2'])
@@ -247,6 +293,8 @@ def grab_command(message):
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
+    if not is_owner(message):
+        return
     chat_id = message.chat.id
     gate_text = (
         "### [GATES]\n\n"
@@ -316,10 +364,14 @@ def handle_help_callback(call):
 
 @bot.message_handler(commands=['nonsk3'])
 def handle_nonsk3_command(message):
+    if not is_owner(message):
+        return
     nonsk3.handle_nonsk3_command(bot, message)
-    
+
 @bot.message_handler(commands=['clean'])
 def clean_command(message):
+    if not is_owner(message):
+        return
     clean.process_clean_command(bot, message)
 
 if __name__ == "__main__":
