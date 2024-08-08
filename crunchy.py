@@ -79,8 +79,8 @@ def check_crunchy_account(account):
         try:
             subscription_info_data = subscription_info_response.json()
         except json.JSONDecodeError as e:
-    return f"Error: Failed to decode JSON response. Details: {str(e)}"
-        
+            return "Dead", f"Failed to decode JSON: {str(e)}"
+            
         subscription_items = subscription_info_data.get('items', [])
 
         if subscription_items:
