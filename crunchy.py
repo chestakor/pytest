@@ -76,11 +76,18 @@ def check_crunchy_account(account):
         }
 
         subscription_info_response = requests.get(subscription_info_url, headers=subscription_info_headers)
-        subscription_info_data = subscription_info_response.json()
+        try:
+            subscription_info_data = subscription_info_response.json()
+        except json.JSONDecodeError as e:
+    return f"Error: Failed to decode JSON response. Details: {str(e)}"
+        
+        subscription_items = subscription_info_data.get('items', [])
 
-        subscription_name = subscription_info_data.get('sku', 'Subscription Not Found')
-        currency = subscription_info_data.get('currency_code', 'N/A')
-        subscription_amount = subscription_info_data.get('amount', 'N/A')
+        if subscription_items:
+            subscription_item = subscription_items[0]
+            subscription_name = subscription_item.get('product', {}).get('sku', 'Subscription Not Found')
+            currency = subscription_item.get('currency_code', 'N/A')
+            subscription_amount = subscription_item.get('amount', 'N/A')
 
         return (f"HIT SUCCESSFULLY✅\n"
                 f"Email Verified: {email_verified}\n"
